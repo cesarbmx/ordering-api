@@ -100,12 +100,12 @@ services:
           - ACCEPT_EULA=y
           - SA_PASSWORD=A&VeryComplex123Password
 
-    CesarBmx.Notification.Api:
+    CesarBmx.Ordering.Api:
         container_name: notification-api
         image: ${DOCKER_REGISTRY-}cesarbmx/notification-api
         build:
           context: .
-          dockerfile: CesarBmx.Notification.Api/Dockerfile
+          dockerfile: CesarBmx.Ordering.Api/Dockerfile
         networks:
             - elastic
         ports:
@@ -136,7 +136,7 @@ services:
         networks:
           - elastic
         depends_on: 
-          - CesarBmx.Notification.Api
+          - CesarBmx.Ordering.Api
 
     grafana:
         container_name: grafana
