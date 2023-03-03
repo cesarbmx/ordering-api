@@ -10,14 +10,14 @@ namespace CesarBmx.Ordering.Api.Configuration
     {
         public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
-            services.ConfigureSharedSwagger("Notification API", typeof(MessageResponseExample));
+            services.ConfigureSharedSwagger("Ordering API", typeof(MessageResponseExample));
 
             return services;
         }
 
         public static IApplicationBuilder ConfigureSwagger(this IApplicationBuilder app, IConfiguration config)
         {
-            app.ConfigureSharedSwagger("Notification API");
+            app.ConfigureSharedSwagger("Ordering API");
 
             return app;
         }
