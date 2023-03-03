@@ -6,7 +6,7 @@ using CesarBmx.Ordering.Domain.Types;
 
 namespace CesarBmx.Ordering.Domain.Models
 {
-    public class Message 
+    public class Order 
     {
         public Guid MessageId { get; private set; }
         public string UserId { get; private set; }
@@ -16,8 +16,8 @@ namespace CesarBmx.Ordering.Domain.Models
         public DateTime Time { get; private set; }
         public NotificationStatus NotificationStatus => NotificationBuilder.BuildNotificationStatus(SentTime);
 
-        public Message() { }
-        public Message(string userId, string phoneNumber, string text, DateTime time)
+        public Order() { }
+        public Order(string userId, string phoneNumber, string text, DateTime time)
         {
             MessageId = Guid.NewGuid();
             UserId = userId;

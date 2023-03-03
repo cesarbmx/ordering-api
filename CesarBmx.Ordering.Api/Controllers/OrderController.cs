@@ -14,11 +14,11 @@ namespace CesarBmx.Ordering.Api.Controllers
     [SwaggerResponse(401, Type = typeof(Unauthorized))]
     [SwaggerResponse(403, Type = typeof(Forbidden))]
     [SwaggerOrder(orderPrefix: "G")]
-    public class NotificationController : Controller
+    public class OrderController : Controller
     {
-        private readonly MessageService _messageService;
+        private readonly OrderService _messageService;
 
-        public NotificationController(MessageService messageService)
+        public OrderController(OrderService messageService)
         {
             _messageService = messageService;
         }
@@ -28,7 +28,7 @@ namespace CesarBmx.Ordering.Api.Controllers
         /// </summary>
         [HttpGet]
         [Route("api/messages")]
-        [SwaggerResponse(200, Type = typeof(List<Message>))]
+        [SwaggerResponse(200, Type = typeof(List<Order>))]
         [SwaggerOperation(Tags = new[] { "Messages" }, OperationId = "Messages_GetMessages")]
         public async Task<IActionResult> GetMessages(string userId)
         {
@@ -44,7 +44,7 @@ namespace CesarBmx.Ordering.Api.Controllers
         /// </summary>
         [HttpGet]
         [Route("api/messages/{messageId}", Name = "Messages_GetMessage")]
-        [SwaggerResponse(200, Type = typeof(Message))]
+        [SwaggerResponse(200, Type = typeof(Order))]
         [SwaggerResponse(404, Type = typeof(NotFound))]
         [SwaggerOperation(Tags = new[] { "Messages" }, OperationId = "Messages_GetMessage")]
         public async Task<IActionResult> GetMessage(Guid messageId)

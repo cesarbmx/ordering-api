@@ -7,7 +7,7 @@ namespace CesarBmx.Ordering.Persistence.Contexts
 {
     public class MainDbContext : DbContext
     {
-        public DbSet<Message> Messages { get; set; }
+        public DbSet<Order> Messages { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options)
            : base(options)
@@ -17,7 +17,7 @@ namespace CesarBmx.Ordering.Persistence.Contexts
         [SuppressMessage("ReSharper", "ObjectCreationAsStatement")]
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Message>().Map();
+            modelBuilder.Entity<Order>().Map();
 
             base.OnModelCreating(modelBuilder);
         }

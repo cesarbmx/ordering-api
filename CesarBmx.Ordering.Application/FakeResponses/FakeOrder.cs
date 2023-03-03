@@ -5,11 +5,11 @@ using CesarBmx.Ordering.Application.Responses;
 
 namespace CesarBmx.Ordering.Application.FakeResponses
 {
-    public static class FakeMessage
+    public static class FakeOrder
     {
-        public static Message GetFake_Master()
+        public static Order GetFake_Master()
         {
-            return new Message
+            return new Order
             {
                 MessageId = Guid.NewGuid(),
                 UserId = "master",
@@ -19,9 +19,9 @@ namespace CesarBmx.Ordering.Application.FakeResponses
                 SentTime = null
             };
         }
-        public static Message GetFake_CesarBmx()
+        public static Order GetFake_CesarBmx()
         {
-            return new Message
+            return new Order
             {
                 MessageId = Guid.NewGuid(),
                 UserId = "cesarbmx",
@@ -31,9 +31,9 @@ namespace CesarBmx.Ordering.Application.FakeResponses
                 SentTime = null
             };
         }
-        public static List<Message> GetFake_List()
+        public static List<Order> GetFake_List()
         {
-            return new List<Message>
+            return new List<Order>
             {
                 GetFake_Master(),
                 GetFake_CesarBmx()

@@ -10,12 +10,12 @@ namespace CesarBmx.Ordering.Application.Jobs
 {
     public class MainJob
     {
-        private readonly MessageService _messageService;
+        private readonly OrderService _messageService;
         private readonly ILogger<MainJob> _logger;
         private readonly ActivitySource _activitySource;
 
         public MainJob(
-            MessageService messageService,
+            OrderService messageService,
             ILogger<MainJob> logger,
             ActivitySource activitySource)
         {

@@ -30,7 +30,7 @@ namespace CesarBmx.Ordering.Api.Configuration
             }
 
             // Services
-            services.AddScoped<MessageService>();
+            services.AddScoped<OrderService>();
 
             // Jobs
             services.AddScoped<MainJob>();

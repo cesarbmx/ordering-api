@@ -9,12 +9,12 @@ namespace CesarBmx.Ordering.Application.Jobs
 {
     public class SendWhatsappNotificationsJob
     {
-        private readonly MessageService _notificationService;
+        private readonly OrderService _notificationService;
         private readonly ILogger<SendWhatsappNotificationsJob> _logger;
         private readonly ActivitySource _activitySource;
 
         public SendWhatsappNotificationsJob(
-            MessageService notificationService,
+            OrderService notificationService,
             ILogger<SendWhatsappNotificationsJob> logger,
             ActivitySource activitySource)
         {

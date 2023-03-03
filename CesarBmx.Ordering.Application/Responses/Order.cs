@@ -3,7 +3,7 @@ using CesarBmx.Ordering.Domain.Types;
 
 namespace CesarBmx.Ordering.Application.Responses
 {
-    public class Message
+    public class Order
     {
         public Guid MessageId { get; set; }
         public string UserId { get; set; }

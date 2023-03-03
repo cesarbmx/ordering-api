@@ -3,11 +3,11 @@ using CesarBmx.Ordering.Domain.Models;
 
 namespace CesarBmx.Ordering.Application.Mappers
 {
-    public class MessageMapper : Profile
+    public class OrderMapper : Profile
     {
-        public MessageMapper()
+        public OrderMapper()
         {
-            CreateMap<Message, Responses.Message>();
+            CreateMap<Order, Responses.Order>();
         }
     }
 }

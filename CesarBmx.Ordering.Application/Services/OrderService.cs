@@ -18,19 +18,19 @@ using Twilio.Rest.Api.V2010.Account;
 
 namespace CesarBmx.Ordering.Application.Services
 {
-    public class MessageService
+    public class OrderService
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
-        private readonly ILogger<MessageService> _logger;
+        private readonly ILogger<OrderService> _logger;
         private readonly ActivitySource _activitySource;
 
-        public MessageService(
+        public OrderService(
             MainDbContext mainDbContext,
             IMapper mapper,
             AppSettings appSettings,
-            ILogger<MessageService> logger,
+            ILogger<OrderService> logger,
             ActivitySource activitySource)
         {
             _mainDbContext = mainDbContext;
@@ -40,7 +40,7 @@ namespace CesarBmx.Ordering.Application.Services
             _activitySource = activitySource;
         }
 
-        public async Task<List<Responses.Message>> GetMessages(string userId)
+        public async Task<List<Responses.Order>> GetMessages(string userId)
         {
             // Start span
             using var span = _activitySource.StartActivity(nameof(GetMessages));       
@@ -50,12 +50,12 @@ namespace CesarBmx.Ordering.Application.Services
                 .Where(x => x.UserId == userId).ToListAsync();
 
             // Response
-            var response = _mapper.Map<List<Responses.Message>>(notifications);
+            var response = _mapper.Map<List<Responses.Order>>(notifications);
 
             // Return
             return response;
         }
-        public async Task<Responses.Message> GetMessage(Guid messageId)
+        public async Task<Responses.Order> GetMessage(Guid messageId)
         {
             // Start span
             using var span = _activitySource.StartActivity(nameof(GetMessage));
@@ -67,7 +67,7 @@ namespace CesarBmx.Ordering.Application.Services
             if (notification == null) throw new NotFoundException(NotificationMessage.NotificationNotFound);
 
             // Response
-            var response = _mapper.Map<Responses.Message>(notification);
+            var response = _mapper.Map<Responses.Order>(notification);
 
             // Return
             return response;

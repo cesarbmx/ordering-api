@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Persistence.Mappings
 {
-    public static class MessageMapping
+    public static class OrderMapping
     {
-        public static void Map(this EntityTypeBuilder<Message> entityBuilder)
+        public static void Map(this EntityTypeBuilder<Order> entityBuilder)
         {
             // Key
             entityBuilder.HasKey(t => t.MessageId);
