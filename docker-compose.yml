@@ -1,0 +1,174 @@
+version: '3.4'
+
+services:
+    elasticsearch:
+        container_name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+        ports:
+          - 9200:9200
+        volumes:
+          - elasticsearch-data:/usr/share/elasticsearch/data
+        environment:
+          - xpack.monitoring.enabled=true
+          - xpack.watcher.enabled=false
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          - discovery.type=single-node
+        networks:
+          - elastic
+
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:7.16.1
+        ports:
+          - 5601:5601
+        depends_on:
+          - elasticsearch
+        environment:
+          - ELASTICSEARCH_URL=http://localhost:9200
+        networks:
+          - elastic
+
+    jaeger-collector:
+        container_name: jaeger-collector
+        image: jaegertracing/jaeger-collector
+        ports:
+          - "14269:14269"
+          - "14268:14268"
+          - "14267:14267"
+          - "14250:14250"
+          - "9411:9411"
+        networks:
+          - elastic
+        restart: on-failure
+        environment:
+          - SPAN_STORAGE_TYPE=elasticsearch
+        command: [
+          "--es.server-urls=http://elasticsearch:9200",
+          "--es.num-shards=1",
+          "--es.num-replicas=0",
+          "--log-level=error"
+        ]
+        depends_on:
+          - elasticsearch
+
+    jaeger-agent:
+        container_name: jaeger-agent
+        image: jaegertracing/jaeger-agent
+        hostname: jaeger-agent
+        command: ["--reporter.grpc.host-port=jaeger-collector:14250"]
+        ports:
+          - "5775:5775/udp"
+          - "6831:6831/udp"
+          - "6832:6832/udp"
+          - "5778:5778"
+        networks:
+          - elastic
+        restart: on-failure
+        environment:
+          - SPAN_STORAGE_TYPE=elasticsearch
+        depends_on:
+          - jaeger-collector
+
+    jaeger-query:
+        container_name: jaeger-query
+        image: jaegertracing/jaeger-query
+        environment:
+          - SPAN_STORAGE_TYPE=elasticsearch
+          - no_proxy=localhost
+        ports:
+          - "16686:16686"
+          - "16687:16687"
+        networks:
+          - elastic
+        restart: on-failure
+        command: [
+          "--es.server-urls=http://elasticsearch:9200",
+          "--span-storage.type=elasticsearch",
+          "--log-level=debug"
+        ]
+        depends_on:
+          - jaeger-agent
+
+    sql:
+        image: "mcr.microsoft.com/mssql/server:2022-latest"
+        container_name: sql-server-2022
+        ports: # not actually needed, because the two services are on the same network
+          - "1433:1433" 
+        networks:
+          - elastic
+        environment:
+          - ACCEPT_EULA=y
+          - SA_PASSWORD=A&VeryComplex123Password
+
+    CesarBmx.Notification.Api:
+        container_name: notification-api
+        image: ${DOCKER_REGISTRY-}cesarbmx/notification-api
+        build:
+          context: .
+          dockerfile: CesarBmx.Notification.Api/Dockerfile
+        networks:
+            - elastic
+        ports:
+            - "65003:80"
+            - "65004:443"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - JAEGER_SERVICE_NAME=NotificationApi
+            - JAEGER_AGENT_HOST=jaeger-agent
+            - JAEGER_AGENT_PORT=6831
+            - JAEGER_SAMPLER_TYPE=const
+            - JAEGER_SAMPLER_PARAM=1
+            - JAEGER_SAMPLER_MANAGER_HOST_PORT=jaeger-agent:5778
+        depends_on: 
+          - jaeger-agent
+          - sql
+
+    prometheus:
+        container_name: prometheus
+        image: quay.io/prometheus/prometheus:latest
+        ports:
+          - "9090:9090"
+        #configs:
+        #  - source: prometheus
+        #    target: /etc/prometheus/prometheus.yml
+        volumes:
+          - ./prometheus.yml:/etc/prometheus/prometheus.yml
+        networks:
+          - elastic
+        depends_on: 
+          - CesarBmx.Notification.Api
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana:latest
+        ports:
+          - 3000:3000
+        #volumes:
+        #  - ./grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+        #  - ./grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+        #  - ./grafana/dashboards:/var/lib/grafana/dashboards
+        environment:
+          - GF_SECURITY_ADMIN_USER=admin
+          - GF_SECURITY_ADMIN_PASSWORD=123456
+          - GF_USERS_ALLOW_SIGN_UP=false
+        networks:
+          - elastic
+        depends_on: 
+          - prometheus
+
+    rabbitmq:
+        container_name: "rabbitmq"
+        image: rabbitmq:management
+        hostname: "rabbitmq"
+        ports:
+          - '5672:5672'
+          - '15672:15672'
+        networks:
+          - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
