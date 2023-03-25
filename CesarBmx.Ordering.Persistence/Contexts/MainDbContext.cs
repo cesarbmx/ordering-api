@@ -7,7 +7,7 @@ namespace CesarBmx.Ordering.Persistence.Contexts
 {
     public class MainDbContext : DbContext
     {
-        public DbSet<Order> Messages { get; set; }
+        public DbSet<Order> Orders { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options)
            : base(options)

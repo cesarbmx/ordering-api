@@ -1,7 +1,5 @@
 ﻿using CesarBmx.Shared.Api.Configuration;
 using CesarBmx.Ordering.Application.Settings;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CesarBmx.Ordering.Api.Configuration
 {

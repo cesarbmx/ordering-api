@@ -1,6 +1,5 @@
 ﻿using System;
 using CesarBmx.Shared.Common.Extensions;
-using CesarBmx.Ordering.Domain.Builders;
 using CesarBmx.Ordering.Domain.Types;
 
 
@@ -8,28 +7,57 @@ namespace CesarBmx.Ordering.Domain.Models
 {
     public class Order 
     {
-        public Guid MessageId { get; private set; }
+        public Guid OrderId { get; private set; }
         public string UserId { get; private set; }
-        public string PhoneNumber { get; private set; }
-        public string Text { get; private set; }
-        public DateTime? SentTime { get; private set; }
-        public DateTime Time { get; private set; }
-        public NotificationStatus NotificationStatus => NotificationBuilder.BuildNotificationStatus(SentTime);
+        public string CurrencyId { get; private set; }
+        public decimal Price { get; private set; }
+        public OrderType OrderType { get; private set; }
+        public decimal Quantity { get; private set; }
+        public OrderStatus OrderStatus { get; private set; }
+        public DateTime? PlacedAt { get; private set; }
+        public DateTime? FilledAt { get; private set; }
+        public DateTime? CancelledAt { get; private set; }
 
         public Order() { }
-        public Order(string userId, string phoneNumber, string text, DateTime time)
+        public Order(
+            Guid orderId,
+            string userId,
+            string currencyId,
+            decimal price,
+            decimal quantity,
+            OrderType orderType,
+            DateTime createdAt)
         {
-            MessageId = Guid.NewGuid();
+            OrderId = orderId;
             UserId = userId;
-            PhoneNumber = phoneNumber;
-            Text = text;
-            SentTime = null;
-            Time = time;
+            CurrencyId = currencyId;
+            Price = price;
+            Quantity = quantity;
+            OrderType = orderType;
+            OrderStatus = OrderStatus.PLACED;
+            PlacedAt = createdAt;
         }
 
-        public void MarkAsSent()
+        public Order MarkAsPlaced()
         {
-            SentTime = DateTime.UtcNow.StripSeconds();
+            OrderStatus = OrderStatus.FILLED;
+            PlacedAt = DateTime.UtcNow.StripSeconds();
+
+            return this;
+        }
+        public Order MarkAsFilled()
+        {
+            OrderStatus = OrderStatus.FILLED;
+            FilledAt = DateTime.UtcNow.StripSeconds();
+
+            return this;
+        }
+        public Order MarkAsCancelled()
+        {
+            OrderStatus = OrderStatus.CANCELLED;
+            CancelledAt = DateTime.UtcNow.StripSeconds();
+
+            return this;
         }
     }
 }

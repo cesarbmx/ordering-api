@@ -10,16 +10,16 @@ namespace CesarBmx.Ordering.Application.Jobs
 {
     public class MainJob
     {
-        private readonly OrderService _messageService;
+        private readonly OrderService _orderService;
         private readonly ILogger<MainJob> _logger;
         private readonly ActivitySource _activitySource;
 
         public MainJob(
-            OrderService messageService,
+            OrderService orderService,
             ILogger<MainJob> logger,
             ActivitySource activitySource)
         {
-            _messageService = messageService;
+            _orderService = orderService;
             _logger = logger;
             _activitySource = activitySource;
         }
@@ -37,7 +37,7 @@ namespace CesarBmx.Ordering.Application.Jobs
                 using var span = _activitySource.StartActivity(nameof(MainJob));
 
                 // Main job
-                await _messageService.SendTelegramMessages();
+                //await _orderService.RetryPlacingOrders();
 
                 // Stop watch
                 stopwatch.Stop();

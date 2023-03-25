@@ -34,8 +34,6 @@ namespace CesarBmx.Ordering.Api.Configuration
 
             // Jobs
             services.AddScoped<MainJob>();
-            services.AddScoped<SendWhatsappNotificationsJob>();
-            services.AddScoped<SendTelgramNotificationsJob>();
 
             // API clients
             services.AddScoped<CoinpaprikaAPI.Client, CoinpaprikaAPI.Client>();

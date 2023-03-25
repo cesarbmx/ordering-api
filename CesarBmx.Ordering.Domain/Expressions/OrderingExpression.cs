@@ -10,9 +10,5 @@ namespace CesarBmx.Ordering.Domain.Expressions
         {
             return x => string.IsNullOrEmpty(userId) || x.UserId == userId;
         }
-        public static Expression<Func<Order, bool>> PendingNotification()
-        {
-            return x => !x.SentTime.HasValue;
-        }
     }
 }

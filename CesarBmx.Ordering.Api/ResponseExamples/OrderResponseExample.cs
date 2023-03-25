@@ -8,10 +8,10 @@ namespace CesarBmx.Ordering.Api.ResponseExamples
     {
         public Order GetExamples()
         {
-            return FakeOrder.GetFake_Master();
+            return FakeOrder.GetFake_Bitcoin();
         }
     }
-    public class NotificationListResponseExample : IExamplesProvider<List<Order>>
+    public class OrderListResponseExample : IExamplesProvider<List<Order>>
     {
         public List<Order> GetExamples()
         {

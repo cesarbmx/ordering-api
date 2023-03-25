@@ -13,11 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CesarBmx.Ordering.Application\CesarBmx.Ordering.Application.csproj" />
-    <ProjectReference Include="..\CesarBmx.Ordering.Domain\CesarBmx.Ordering.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Application\" />
     <Folder Include="Domain\" />
   </ItemGroup>

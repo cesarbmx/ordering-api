@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using CesarBmx.Ordering.Application.Mappers;
-using Microsoft.Extensions.DependencyInjection;
+﻿using CesarBmx.Ordering.Application.Mappers;
 
 namespace CesarBmx.Ordering.Api.Configuration
 {

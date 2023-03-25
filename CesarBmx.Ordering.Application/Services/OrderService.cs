@@ -5,16 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Shared.Application.Exceptions;
-using CesarBmx.Ordering.Domain.Expressions;
 using CesarBmx.Ordering.Application.Messages;
-using CesarBmx.Ordering.Application.Settings;
 using CesarBmx.Ordering.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
-using Twilio;
-using Twilio.Types;
-using Twilio.Rest.Api.V2010.Account;
+using CesarBmx.Shared.Messaging.CryptoWatcher.Events;
+using MassTransit;
+using CesarBmx.Ordering.Application.Requests;
+using CesarBmx.Ordering.Domain.Builders;
+using CesarBmx.Shared.Messaging.Ordering.Events;
 
 namespace CesarBmx.Ordering.Application.Services
 {
@@ -22,163 +21,88 @@ namespace CesarBmx.Ordering.Application.Services
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
-        private readonly AppSettings _appSettings;
         private readonly ILogger<OrderService> _logger;
         private readonly ActivitySource _activitySource;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public OrderService(
             MainDbContext mainDbContext,
             IMapper mapper,
-            AppSettings appSettings,
             ILogger<OrderService> logger,
-            ActivitySource activitySource)
+            ActivitySource activitySource,
+            IPublishEndpoint publishEndpoint)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
-            _appSettings = appSettings;
             _logger = logger;
             _activitySource = activitySource;
+            _publishEndpoint = publishEndpoint;
         }
 
-        public async Task<List<Responses.Order>> GetMessages(string userId)
+        public async Task<List<Responses.Order>> GetOrders(string userId)
         {
-            // Start span
-            using var span = _activitySource.StartActivity(nameof(GetMessages));       
-
-            // Get user
-            var notifications = await _mainDbContext.Messages
-                .Where(x => x.UserId == userId).ToListAsync();
+            // Get all orders
+            var orders = await _mainDbContext.Orders.Where(x => x.UserId == userId).ToListAsync();
 
             // Response
-            var response = _mapper.Map<List<Responses.Order>>(notifications);
+            var response = _mapper.Map<List<Responses.Order>>(orders);
 
             // Return
             return response;
         }
-        public async Task<Responses.Order> GetMessage(Guid messageId)
+        public async Task<Responses.Order> GetOrder(Guid orderId)
         {
             // Start span
-            using var span = _activitySource.StartActivity(nameof(GetMessage));
+            using var span = _activitySource.StartActivity(nameof(GetOrder));
 
-            // Get notification
-            var notification = await _mainDbContext.Messages.FindAsync(messageId);
+            // Get order
+            var order = await _mainDbContext.Orders.FindAsync(orderId);
 
-            // Throw NotFound if the currency does not exist
-            if (notification == null) throw new NotFoundException(NotificationMessage.NotificationNotFound);
+            // Order not found
+            if (order == null) throw new NotFoundException(OrderMessage.OrderNotFound);
 
             // Response
-            var response = _mapper.Map<Responses.Order>(notification);
+            var response = _mapper.Map<Responses.Order>(order);
 
             // Return
             return response;
         }
 
-        public async Task SendTelegramMessages()
+        public async Task<Responses.Order> PlaceOrder(PlaceOrder placeOrder)
         {
             // Start watch
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             // Start span
-            using var span = _activitySource.StartActivity(nameof(SendTelegramMessages));
+            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
-            // Get pending notifications
-            var messages = await _mainDbContext.Messages.Where(NotificationExpression.PendingNotification()).ToListAsync();
+            // New order
+            var newOrder = OrderFactory.CreateOrder(placeOrder, DateTime.UtcNow);
 
-            // Connect
-            var apiToken = _appSettings.TelegramApiToken;
-            var bot = new TelegramBotClient(apiToken);
+            // Add
+            await _mainDbContext.Orders.AddAsync(newOrder);
 
-            // For each notification
-            var count = 0;
-            var failedCount = 0;
-            foreach (var message in messages)
-            {
-                try
-                {
-                    // Send telegram
-                    await bot.SendTextMessageAsync("@crypto_watcher_official", message.Text);
+            // Save
+            await _mainDbContext.SaveChangesAsync();
 
-                    // Mark notification as sent
-                    message.MarkAsSent();
+            // Response
+            var response = _mapper.Map<Responses.Order>(newOrder);
 
-                    // Update notification
-                    _mainDbContext.Messages.Update(message);
+            // Event
+            var orderTriggered = _mapper.Map<List<OrderTriggered>>(newOrder);
 
-                    // Save
-                    await _mainDbContext.SaveChangesAsync();
-
-                    // Count
-                    count++;
-                }
-                catch (Exception ex)
-                {
-                    // Log
-                    _logger.LogError(ex, ex.Message);
-                    failedCount++;
-                }
-            }
+            // Publish event
+            await _publishEndpoint.Publish(orderTriggered);
 
             // Stop watch
             stopwatch.Stop();
 
             // Log
-            _logger.LogInformation("{@Event}, {@Id}, {@Count}, {@FailedCount}, {@ExecutionTime}", "TelegramNotificationsSent", Guid.NewGuid(), count, failedCount, stopwatch.Elapsed.TotalSeconds);
-        }
-        public async Task SendWhatsappNotifications()
-        {
-            // Start watch
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
-            // Start span
-            using var span = _activitySource.StartActivity(nameof(SendWhatsappNotifications));
-
-            // Get pending messages
-            var pendingMessages = await _mainDbContext.Messages.Where(NotificationExpression.PendingNotification()).ToListAsync();
-
-            // If there are pending notifications
-            if (pendingMessages.Count > 0)
-            {
-                // Connect
-                TwilioClient.Init(
-                    Environment.GetEnvironmentVariable("TWILIO_ACCOUNT_SID"),
-                    Environment.GetEnvironmentVariable("TWILIO_AUTH_TOKEN")
-                );
-
-                // For each notification
-                var count = 0;
-                var failedCount = 0;
-                foreach (var pendingMessage in pendingMessages)
-                {
-                    try
-                    {
-                        // Send whatsapp
-                        MessageResource.Create(
-                            from: new PhoneNumber("whatsapp:" + pendingMessage.PhoneNumber),
-                            to: new PhoneNumber("whatsapp:" + "+34666666666"),
-                            body: pendingMessage.Text
-                        );
-                        pendingMessage.MarkAsSent();
-                        count++;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log
-                        _logger.LogError(ex, ex.Message);
-                        failedCount++;
-                    }
-                }
-
-                // Save
-                await _mainDbContext.SaveChangesAsync();
-
-                // Stop watch
-                stopwatch.Stop();
-
-                // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@Count}, {@FailedCount}, {@ExecutionTime}", "WhatsappNotificationsSent", Guid.NewGuid(), count, failedCount, stopwatch.Elapsed.TotalSeconds);
-            }
+            // Return
+            return response;
         }
     }
 }

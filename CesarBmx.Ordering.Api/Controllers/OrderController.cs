@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using CesarBmx.Shared.Application.Responses;
+﻿using CesarBmx.Shared.Application.Responses;
 using CesarBmx.Ordering.Application.Responses;
 using CesarBmx.Ordering.Application.Services;
 using CesarBmx.Shared.Api.ActionFilters;
@@ -16,41 +13,41 @@ namespace CesarBmx.Ordering.Api.Controllers
     [SwaggerOrder(orderPrefix: "G")]
     public class OrderController : Controller
     {
-        private readonly OrderService _messageService;
+        private readonly OrderService _orderService;
 
-        public OrderController(OrderService messageService)
+        public OrderController(OrderService orderService)
         {
-            _messageService = messageService;
+            _orderService = orderService;
         }
 
         /// <summary>
-        /// Get messages
+        /// Get orders
         /// </summary>
         [HttpGet]
-        [Route("api/messages")]
+        [Route("api/orders")]
         [SwaggerResponse(200, Type = typeof(List<Order>))]
-        [SwaggerOperation(Tags = new[] { "Messages" }, OperationId = "Messages_GetMessages")]
-        public async Task<IActionResult> GetMessages(string userId)
+        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_GetOrders")]
+        public async Task<IActionResult> GetOrders(string userId)
         {
             // Reponse
-            var response = await _messageService.GetMessages(userId);
+            var response = await _orderService.GetOrders(userId);
 
             // Return
             return Ok(response);
         }
 
         /// <summary>
-        /// Get message
+        /// Get order
         /// </summary>
         [HttpGet]
-        [Route("api/messages/{messageId}", Name = "Messages_GetMessage")]
+        [Route("api/orders/{orderId}", Name = "Orders_GetOrder")]
         [SwaggerResponse(200, Type = typeof(Order))]
         [SwaggerResponse(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Messages" }, OperationId = "Messages_GetMessage")]
-        public async Task<IActionResult> GetMessage(Guid messageId)
+        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_GetOrder")]
+        public async Task<IActionResult> GetOrder(Guid orderId)
         {
             // Reponse
-            var response = await _messageService.GetMessage(messageId);
+            var response = await _orderService.GetOrder(orderId);
 
             // Return
             return Ok(response);

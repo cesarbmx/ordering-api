@@ -4,7 +4,7 @@ namespace CesarBmx.Ordering.Domain.Types
 {
     public enum OrderStatus
     {
-        PENDING,
+        PLACED,
         FILLED,
         CANCELLED
     }
