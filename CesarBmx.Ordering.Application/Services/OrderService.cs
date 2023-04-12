@@ -9,11 +9,10 @@ using CesarBmx.Ordering.Application.Messages;
 using CesarBmx.Ordering.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using CesarBmx.Shared.Messaging.CryptoWatcher.Events;
 using MassTransit;
-using CesarBmx.Ordering.Application.Requests;
 using CesarBmx.Ordering.Domain.Builders;
 using CesarBmx.Shared.Messaging.Ordering.Events;
+using CesarBmx.Ordering.Application.Requests;
 
 namespace CesarBmx.Ordering.Application.Services
 {
@@ -78,7 +77,7 @@ namespace CesarBmx.Ordering.Application.Services
             using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
             // New order
-            var newOrder = OrderFactory.CreateOrder(placeOrder, DateTime.UtcNow);
+            var newOrder = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
 
             // Add
             await _mainDbContext.Orders.AddAsync(newOrder);
@@ -90,10 +89,10 @@ namespace CesarBmx.Ordering.Application.Services
             var response = _mapper.Map<Responses.Order>(newOrder);
 
             // Event
-            var orderTriggered = _mapper.Map<List<OrderTriggered>>(newOrder);
+            var orderPlaced = _mapper.Map<List<OrderPlaced>>(newOrder);
 
             // Publish event
-            await _publishEndpoint.Publish(orderTriggered);
+            await _publishEndpoint.Publish(orderPlaced);
 
             // Stop watch
             stopwatch.Stop();

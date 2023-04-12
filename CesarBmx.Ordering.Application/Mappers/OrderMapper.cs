@@ -1,5 +1,7 @@
 using AutoMapper;
+using CesarBmx.Ordering.Application.Requests;
 using CesarBmx.Ordering.Domain.Models;
+using CesarBmx.Shared.Messaging.Ordering.Events;
 
 namespace CesarBmx.Ordering.Application.Mappers
 {
@@ -7,7 +9,11 @@ namespace CesarBmx.Ordering.Application.Mappers
     {
         public OrderMapper()
         {
+            // Model to Response
             CreateMap<Order, Responses.Order>();
+
+            // Model to Event
+            CreateMap<Order, OrderPlaced>();
         }
     }
 }
