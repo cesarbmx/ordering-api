@@ -1,5 +1,4 @@
 using AutoMapper;
-using CesarBmx.Ordering.Application.Requests;
 using CesarBmx.Ordering.Domain.Models;
 using CesarBmx.Shared.Messaging.Ordering.Events;
 
