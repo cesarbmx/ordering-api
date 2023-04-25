@@ -9,27 +9,29 @@ namespace CesarBmx.Ordering.Domain.Builders
 {
     public static class OrderBuilder
     {
-        public static Order BuildOrder(this SubmitOrder placeOrder, DateTime createdAt)
+        public static Order BuildOrder(this SubmitOrder submitOrder, DateTime createdAt)
         {
             var order = new Order(
-                placeOrder.UserId,
-                placeOrder.CurrencyId,
-                placeOrder.Price,
-                placeOrder.Quantity,
-                placeOrder.OrderType,
+                Guid.NewGuid(),
+                submitOrder.UserId,
+                submitOrder.CurrencyId,
+                submitOrder.Price,
+                submitOrder.Quantity,
+                submitOrder.OrderType,
                 createdAt
                 );
 
             return order;
         }
-        public static Order BuildOrder(this Command.SubmitOrder placeOrder, DateTime createdAt)
+        public static Order BuildOrder(this Command.SubmitOrder submitOrder, DateTime createdAt)
         {
             var order = new Order(
-                placeOrder.UserId,
-                placeOrder.CurrencyId,
-                placeOrder.Price,
-                placeOrder.Quantity,
-                placeOrder.OrderType.BuildOrderType(),
+                submitOrder.OrderId,
+                submitOrder.UserId,
+                submitOrder.CurrencyId,
+                submitOrder.Price,
+                submitOrder.Quantity,
+                submitOrder.OrderType.BuildOrderType(),
                 createdAt
                 );
 
