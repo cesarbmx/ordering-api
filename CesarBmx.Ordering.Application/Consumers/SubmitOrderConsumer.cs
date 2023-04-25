@@ -14,19 +14,19 @@ using CesarBmx.Shared.Messaging.Notification.Events;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
-    public class PlaceOrderConsumer : IConsumer<SubmitOrder>
+    public class SubmitOrderConsumer : IConsumer<SubmitOrder>
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
-        private readonly ILogger<PlaceOrderConsumer> _logger;
+        private readonly ILogger<SubmitOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly OrderService _orderService;
 
-        public PlaceOrderConsumer(
+        public SubmitOrderConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
-            ILogger<PlaceOrderConsumer> logger,
+            ILogger<SubmitOrderConsumer> logger,
             ActivitySource activitySource,
             IPublishEndpoint publishEndpoint,
             OrderService orderService)
