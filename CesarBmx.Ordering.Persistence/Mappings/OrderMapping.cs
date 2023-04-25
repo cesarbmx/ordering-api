@@ -14,7 +14,7 @@ namespace CesarBmx.Ordering.Persistence.Mappings
 
             // Properties
             entityBuilder.Property(t => t.OrderId)
-                .HasColumnType("int")
+                .HasColumnType("uniqueidentifier")
                 .IsRequired();
 
             entityBuilder.Property(t => t.UserId)
