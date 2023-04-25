@@ -20,6 +20,7 @@ namespace CesarBmx.Ordering.Domain.Models
 
         public Order() { }
         public Order(
+            Guid orderId,
             string userId,
             string currencyId,
             decimal price,
@@ -27,7 +28,7 @@ namespace CesarBmx.Ordering.Domain.Models
             OrderType orderType,
             DateTime createdAt)
         {
-            OrderId = Guid.NewGuid();
+            OrderId = orderId;
             UserId = userId;
             CurrencyId = currencyId;
             Price = price;
