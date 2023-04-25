@@ -9,32 +9,37 @@ using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Ordering.Persistence.Contexts;
+using CesarBmx.Ordering.Application.Services;
+using CesarBmx.Shared.Messaging.Notification.Events;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
-    public class PlaceOrderConsumer : IConsumer<PlaceOrder>
+    public class PlaceOrderConsumer : IConsumer<SubmitOrder>
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<PlaceOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly OrderService _orderService;
 
         public PlaceOrderConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
             ILogger<PlaceOrderConsumer> logger,
             ActivitySource activitySource,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            OrderService orderService)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
             _publishEndpoint = publishEndpoint;
+            _orderService = orderService;
         }
 
-        public async Task Consume(ConsumeContext<PlaceOrder> context)
+        public async Task Consume(ConsumeContext<SubmitOrder> context)
         {
             try
             {
@@ -43,7 +48,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+                using var span = _activitySource.StartActivity(nameof(SubmitOrder));
 
                 // New order
                 var newOrder = OrderBuilder.BuildOrder(context.Message, DateTime.UtcNow);
@@ -59,6 +64,9 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 // Publish event
                 await _publishEndpoint.Publish(orderPlaced);
+
+                // Response
+                await context.RespondAsync(orderPlaced);
 
                 // Stop watch
                 stopwatch.Stop();

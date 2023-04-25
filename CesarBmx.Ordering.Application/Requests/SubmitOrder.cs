@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CesarBmx.Ordering.Application.Requests
 {
-    public class PlaceOrder
+    public class SubmitOrder
     {
         [Required] public string UserId { get; set; }
         [Required] public string CurrencyId { get; set; }

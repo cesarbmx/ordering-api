@@ -9,7 +9,7 @@ namespace CesarBmx.Ordering.Domain.Builders
 {
     public static class OrderBuilder
     {
-        public static Order BuildOrder(this PlaceOrder placeOrder, DateTime createdAt)
+        public static Order BuildOrder(this SubmitOrder placeOrder, DateTime createdAt)
         {
             var order = new Order(
                 placeOrder.UserId,
@@ -22,7 +22,7 @@ namespace CesarBmx.Ordering.Domain.Builders
 
             return order;
         }
-        public static Order BuildOrder(this Command.PlaceOrder placeOrder, DateTime createdAt)
+        public static Order BuildOrder(this Command.SubmitOrder placeOrder, DateTime createdAt)
         {
             var order = new Order(
                 placeOrder.UserId,

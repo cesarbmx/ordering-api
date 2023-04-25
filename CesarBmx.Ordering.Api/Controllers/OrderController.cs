@@ -4,6 +4,8 @@ using CesarBmx.Ordering.Application.Services;
 using CesarBmx.Shared.Api.ActionFilters;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using CesarBmx.Ordering.Application.Requests;
+using CesarBmx.Ordering.Application.Conflicts;
 
 namespace CesarBmx.Ordering.Api.Controllers
 {
@@ -51,6 +53,25 @@ namespace CesarBmx.Ordering.Api.Controllers
 
             // Return
             return Ok(response);
+        }
+
+        /// <summary>
+        /// Submit order
+        /// </summary>
+        [HttpPost]
+        [Route("api/users")]
+        [SwaggerResponse(201, Type = typeof(Order))]
+        [SwaggerResponse(400, Type = typeof(BadRequest))]
+        [SwaggerResponse(409, Type = typeof(Conflict<SubmitOrderConflict>))]
+        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerOperation(Tags = new[] { "Users" }, OperationId = "Users_AddUser")]
+        public async Task<IActionResult> AddUser([FromBody] SubmitOrder request)
+        {
+            // Reponse
+            var response = await _orderService.SubmitOrder(request);
+
+            // Return
+            return CreatedAtRoute("Users_GetUser", new { response.UserId }, response);
         }
     }
 }

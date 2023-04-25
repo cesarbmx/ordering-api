@@ -13,6 +13,7 @@ using MassTransit;
 using CesarBmx.Ordering.Domain.Builders;
 using CesarBmx.Shared.Messaging.Ordering.Events;
 using CesarBmx.Ordering.Application.Requests;
+using CesarBmx.Ordering.Domain.Models;
 
 namespace CesarBmx.Ordering.Application.Services
 {
@@ -66,8 +67,7 @@ namespace CesarBmx.Ordering.Application.Services
             // Return
             return response;
         }
-
-        public async Task<Responses.Order> PlaceOrder(PlaceOrder placeOrder)
+        public async Task<Responses.Order> SubmitOrder(SubmitOrder placeOrder)
         {
             // Start watch
             var stopwatch = new Stopwatch();
@@ -77,19 +77,55 @@ namespace CesarBmx.Ordering.Application.Services
             using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
             // New order
-            var newOrder = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
+            var order = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
 
             // Add
-            await _mainDbContext.Orders.AddAsync(newOrder);
+            await _mainDbContext.Orders.AddAsync(order);
 
             // Save
             await _mainDbContext.SaveChangesAsync();
 
             // Response
-            var response = _mapper.Map<Responses.Order>(newOrder);
+            var response = _mapper.Map<Responses.Order>(order);
 
             // Event
-            var orderPlaced = _mapper.Map<List<OrderPlaced>>(newOrder);
+            var orderSubmitted = _mapper.Map<List<OrderSubmitted>>(order);
+
+            // Publish event
+            await _publishEndpoint.Publish(orderSubmitted);
+
+            // Stop watch
+            stopwatch.Stop();
+
+            // Log
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderSubmitted), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+
+            // Return
+            return response;
+        }
+
+        public async Task<Order> PlaceOrder(Order order)
+        {
+            // Start watch
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // Start span
+            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+
+            // TODO: Place it on Binance
+
+            // Mark it as placed
+            order.MarkAsPlaced();
+
+            // Update order
+            _mainDbContext.Orders.Update(order);
+
+            // Save
+            await _mainDbContext.SaveChangesAsync();
+
+            // Event
+            var orderPlaced = _mapper.Map<List<OrderPlaced>>(order);
 
             // Publish event
             await _publishEndpoint.Publish(orderPlaced);
@@ -101,7 +137,7 @@ namespace CesarBmx.Ordering.Application.Services
             _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
             // Return
-            return response;
+            return order;
         }
     }
 }
