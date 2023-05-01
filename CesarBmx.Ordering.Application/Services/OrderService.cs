@@ -67,7 +67,7 @@ namespace CesarBmx.Ordering.Application.Services
             // Return
             return response;
         }
-        public async Task<Responses.Order> SubmitOrder(SubmitOrder placeOrder)
+        public async Task<Responses.Order> SubmitOrder(SubmitOrder submitOrder)
         {
             // Start watch
             var stopwatch = new Stopwatch();
@@ -77,7 +77,7 @@ namespace CesarBmx.Ordering.Application.Services
             using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
             // New order
-            var order = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
+            var order = OrderBuilder.BuildOrder(submitOrder, DateTime.UtcNow);
 
             // Add
             await _mainDbContext.Orders.AddAsync(order);

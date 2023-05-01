@@ -54,16 +54,16 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var newOrder = OrderBuilder.BuildOrder(context.Message, DateTime.UtcNow);
 
                 // Add
-                await _mainDbContext.Orders.AddAsync(newOrder);
-
-                // Save
-                await _mainDbContext.SaveChangesAsync();
+                await _mainDbContext.Orders.AddAsync(newOrder);              
 
                 // Event
                 var orderSubmitted = _mapper.Map<OrderSubmitted>(newOrder);
 
                 // Publish event
                 await _publishEndpoint.Publish(orderSubmitted);
+
+                // Save
+                await _mainDbContext.SaveChangesAsync();
 
                 // Response
                 await context.RespondAsync(orderSubmitted);
