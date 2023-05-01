@@ -19,20 +19,17 @@ namespace CesarBmx.Ordering.Application.Consumers
         private readonly IMapper _mapper;
         private readonly ILogger<CancelOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
-        private readonly IPublishEndpoint _publishEndpoint;
 
         public CancelOrderConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
             ILogger<CancelOrderConsumer> logger,
-            ActivitySource activitySource,
-            IPublishEndpoint publishEndpoint)
+            ActivitySource activitySource)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
-            _publishEndpoint = publishEndpoint;
         }
 
         public async Task Consume(ConsumeContext<CancelOrder> context)
@@ -59,7 +56,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var orderCancelled = _mapper.Map<OrderCancelled>(order);
 
                 // Publish event
-                await _publishEndpoint.Publish(orderCancelled);
+                await context.Publish(orderCancelled);
 
                 // Response
                 await context.RespondAsync(orderCancelled);

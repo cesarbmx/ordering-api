@@ -16,23 +16,17 @@ namespace CesarBmx.Ordering.Application.Consumers
         private readonly IMapper _mapper;
         private readonly ILogger<OrderSubmittedConsumer> _logger;
         private readonly ActivitySource _activitySource;
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly OrderService _orderService;
 
         public OrderSubmittedConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
             ILogger<OrderSubmittedConsumer> logger,
-            ActivitySource activitySource,
-            IPublishEndpoint publishEndpoint,
-            OrderService orderService)
+            ActivitySource activitySource)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
-            _publishEndpoint = publishEndpoint;
-            _orderService = orderService;
         }
 
         public async Task Consume(ConsumeContext<OrderSubmitted> context)
@@ -54,7 +48,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var orderPlaced = _mapper.Map<OrderPlaced>(orderSubmitted);
 
                 // Publish event
-                await _publishEndpoint.Publish(orderPlaced);
+                await context.Publish(orderPlaced);
 
                 // Response
                 await context.RespondAsync(orderPlaced);
