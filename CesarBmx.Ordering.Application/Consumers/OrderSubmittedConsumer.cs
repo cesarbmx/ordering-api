@@ -1,20 +1,16 @@
-﻿using CesarBmx.Ordering.Domain.Builders;
-using CesarBmx.Shared.Messaging.Ordering.Commands;
-using CesarBmx.Shared.Messaging.Ordering.Events;
+﻿using CesarBmx.Shared.Messaging.Ordering.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Ordering.Persistence.Contexts;
 using CesarBmx.Ordering.Application.Services;
-using CesarBmx.Shared.Messaging.Notification.Events;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
-    public class OrderSubmittedConsumer : IConsumer<SubmitOrder>
+    public class OrderSubmittedConsumer : IConsumer<OrderSubmitted>
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;

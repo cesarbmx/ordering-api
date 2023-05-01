@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CesarBmx.Ordering.Domain.Models;
 using CesarBmx.Ordering.Persistence.Mappings;
+using CesarBmx.Shared.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Persistence.Contexts
@@ -20,6 +21,8 @@ namespace CesarBmx.Ordering.Persistence.Contexts
             modelBuilder.Entity<Order>().Map();
 
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.UseMasstransit();
         }
     }
 }

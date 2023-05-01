@@ -39,18 +39,30 @@ namespace CesarBmx.Ordering.Application.Sagas
             During(Submitted,
                 When(OrderPlaced)
                     .SetPlacingDetails()
-                    .Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new {context.Message.OrderId})));
+                    .Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new { context.Message.OrderId }))
+                    .PublishOrderPlaced()
+                    .TransitionTo(Placed));
 
             During(Placed,
                 When(OrderFilled)
                     .SetFillingDetails()
+                    .PublishOrderFilled()
                     .TransitionTo(Filled)
                     .Finalize());
 
             During(Placed,
                 When(OrderCancelled)
                     .SetCancelationDetails()
+                    .PublishOrderCancelled()
+                    .TransitionTo(Cancelled)
                     .Finalize());
+
+            During(Placed,
+               When(OrderExpired)
+                   .SetCancelationDetails()
+                   .PublishOrderCancelled()
+                   .TransitionTo(Cancelled)
+                   .Finalize());
         }
 
         public Event<OrderSubmitted> OrderSubmitted { get; private set; }
@@ -102,24 +114,82 @@ namespace CesarBmx.Ordering.Application.Sagas
                 x.Saga.CancelledAt = DateTime.UtcNow.StripSeconds();
             });
         }
+        public static EventActivityBinder<OrderState, OrderExpired> SetCancelationDetails(
+          this EventActivityBinder<OrderState, OrderExpired> binder)
+        {
+            return binder.Then(x =>
+            {
+                x.Saga.CancelledAt = DateTime.UtcNow.StripSeconds();
+            });
+        }
 
-        //public static EventActivityBinder<OrderState, SubmitOrder> PublishOrderSubmitted(
-        //   this EventActivityBinder<OrderState, SubmitOrder> binder)
-        //{
-        //    return binder.PublishAsync(context => context.Init<OrderSubmitted>(new OrderPlaced
-        //    {
+        public static EventActivityBinder<OrderState, OrderPlaced> PublishOrderPlaced(
+           this EventActivityBinder<OrderState, OrderPlaced> binder)
+        {
+            return binder.PublishAsync(context => context.Init<OrderPlaced>(new OrderPlaced
+            {
 
-        //        // TODO: Automapper
+                // TODO: Automapper
 
-        //        OrderId = context.Message.OrderId,
-        //        UserId = context.Message.UserId,
-        //        CurrencyId = context.Message.CurrencyId,
-        //        Price = context.Message.Price,
-        //        OrderType = context.Message.OrderType,
-        //        Quantity = context.Message.Quantity,
-        //        CreatedAt = context.Message.CreatedAt
+                OrderId = context.Message.OrderId,
+                UserId = context.Message.UserId,
+                CurrencyId = context.Message.CurrencyId,
+                Price = context.Message.Price,
+                OrderType = context.Message.OrderType,
+                Quantity = context.Message.Quantity,
+                CreatedAt = context.Message.CreatedAt               
+            }));
+        }
+        public static EventActivityBinder<OrderState, OrderFilled> PublishOrderFilled(
+           this EventActivityBinder<OrderState, OrderFilled> binder)
+        {
+            return binder.PublishAsync(context => context.Init<OrderFilled>(new OrderFilled
+            {
 
-        //    }));
-        //}
+                // TODO: Automapper
+
+                OrderId = context.Message.OrderId,
+                UserId = context.Message.UserId,
+                CurrencyId = context.Message.CurrencyId,
+                Price = context.Message.Price,
+                OrderType = context.Message.OrderType,
+                Quantity = context.Message.Quantity,
+                CreatedAt = context.Message.CreatedAt
+            }));
+        }
+        public static EventActivityBinder<OrderState, OrderCancelled> PublishOrderCancelled(
+          this EventActivityBinder<OrderState, OrderCancelled> binder)
+        {
+            return binder.PublishAsync(context => context.Init<OrderCancelled>(new OrderCancelled
+            {
+
+                // TODO: Automapper
+
+                OrderId = context.Message.OrderId,
+                UserId = context.Message.UserId,
+                CurrencyId = context.Message.CurrencyId,
+                Price = context.Message.Price,
+                OrderType = context.Message.OrderType,
+                Quantity = context.Message.Quantity,
+                CreatedAt = context.Message.CreatedAt
+            }));
+        }
+        public static EventActivityBinder<OrderState, OrderExpired> PublishOrderCancelled(
+          this EventActivityBinder<OrderState, OrderExpired> binder)
+        {
+            return binder.PublishAsync(context => context.Init<OrderExpired>(new OrderExpired
+            {
+
+                // TODO: Automapper
+
+                OrderId = context.Message.OrderId,
+                UserId = context.Message.UserId,
+                CurrencyId = context.Message.CurrencyId,
+                Price = context.Message.Price,
+                OrderType = context.Message.OrderType,
+                Quantity = context.Message.Quantity,
+                CreatedAt = context.Message.CreatedAt
+            }));
+        }
     }
 }
