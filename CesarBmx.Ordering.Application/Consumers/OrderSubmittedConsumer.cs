@@ -1,4 +1,4 @@
-﻿using CesarBmx.Shared.Messaging.Ordering.Events;
+﻿ using CesarBmx.Shared.Messaging.Ordering.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Ordering.Persistence.Contexts;
 using CesarBmx.Ordering.Application.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
@@ -42,7 +43,13 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 var orderSubmitted = context.Message;
 
-                // TODO: Place order
+                // TODO: Place order on Binance
+
+                // Get order
+                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == context.Message.OrderId);
+
+                // Mark as cancelled
+                order.MarkAsCancelled();
 
                 // Event
                 var orderPlaced = _mapper.Map<OrderPlaced>(orderSubmitted);
@@ -50,8 +57,8 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Publish event
                 await context.Publish(orderPlaced);
 
-                // Response
-                await context.RespondAsync(orderPlaced);
+                // Save
+                await _mainDbContext.SaveChangesAsync();               
 
                 // Stop watch
                 stopwatch.Stop();

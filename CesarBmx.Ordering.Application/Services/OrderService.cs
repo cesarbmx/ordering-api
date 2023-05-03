@@ -80,10 +80,7 @@ namespace CesarBmx.Ordering.Application.Services
             var order = OrderBuilder.BuildOrder(submitOrder, DateTime.UtcNow);
 
             // Add
-            await _mainDbContext.Orders.AddAsync(order);
-
-            // Save
-            await _mainDbContext.SaveChangesAsync();
+            await _mainDbContext.Orders.AddAsync(order);           
 
             // Response
             var response = _mapper.Map<Responses.Order>(order);
@@ -94,11 +91,55 @@ namespace CesarBmx.Ordering.Application.Services
             // Publish event
             await _publishEndpoint.Publish(orderSubmitted);
 
+            // Save
+            await _mainDbContext.SaveChangesAsync();
+
             // Stop watch
             stopwatch.Stop();
 
             // Log
             _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderSubmitted), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+
+            // Return
+            return response;
+        }
+        public async Task<Responses.Order> PlaceOrder(PlaceOrder placeOrder)
+        {
+            // Start watch
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // Start span
+            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+
+            // New order
+            var order = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
+
+            // Add
+            await _mainDbContext.Orders.AddAsync(order);
+
+            // TODO: Place order on Binance
+
+            // Mark as placed
+            order.MarkAsPlaced();
+
+            // Response
+            var response = _mapper.Map<Responses.Order>(order);
+
+            // Event
+            var orderSubmitted = _mapper.Map<List<OrderSubmitted>>(order);
+
+            // Publish event
+            await _publishEndpoint.Publish(orderSubmitted);
+
+            // Save
+            await _mainDbContext.SaveChangesAsync();
+
+            // Stop watch
+            stopwatch.Stop();
+
+            // Log
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
             // Return
             return response;

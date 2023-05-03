@@ -59,19 +59,38 @@ namespace CesarBmx.Ordering.Api.Controllers
         /// Submit order
         /// </summary>
         [HttpPost]
-        [Route("api/users")]
+        [Route("api/submit-order")]
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<SubmitOrderConflict>))]
         [SwaggerResponse(422, Type = typeof(Validation))]
-        [SwaggerOperation(Tags = new[] { "Users" }, OperationId = "Users_AddUser")]
-        public async Task<IActionResult> AddUser([FromBody] SubmitOrder request)
+        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_SubmitOrder")]
+        public async Task<IActionResult> SubmitOrder([FromBody] SubmitOrder request)
         {
             // Reponse
             var response = await _orderService.SubmitOrder(request);
 
             // Return
-            return CreatedAtRoute("Users_GetUser", new { response.UserId }, response);
+            return CreatedAtRoute("Orders_GetOrder", new { response.OrderId }, response);
+        }
+
+        /// <summary>
+        /// Place order
+        /// </summary>
+        [HttpPost]
+        [Route("api/place-order")]
+        [SwaggerResponse(201, Type = typeof(Order))]
+        [SwaggerResponse(400, Type = typeof(BadRequest))]
+        [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
+        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_PlaceOrder")]
+        public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrder request)
+        {
+            // Reponse
+            var response = await _orderService.PlaceOrder(request);
+
+            // Return
+            return CreatedAtRoute("Orders_GetOrder", new { response.OrderId }, response);
         }
     }
 }

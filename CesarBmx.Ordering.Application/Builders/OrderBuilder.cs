@@ -23,6 +23,20 @@ namespace CesarBmx.Ordering.Domain.Builders
 
             return order;
         }
+        public static Order BuildOrder(this PlaceOrder placeOrder, DateTime createdAt)
+        {
+            var order = new Order(
+                Guid.NewGuid(),
+                placeOrder.UserId,
+                placeOrder.CurrencyId,
+                placeOrder.Price,
+                placeOrder.Quantity,
+                placeOrder.OrderType,
+                createdAt
+                );
+
+            return order;
+        }
         public static Order BuildOrder(this Command.SubmitOrder submitOrder, DateTime createdAt)
         {
             var order = new Order(
@@ -32,6 +46,20 @@ namespace CesarBmx.Ordering.Domain.Builders
                 submitOrder.Price,
                 submitOrder.Quantity,
                 submitOrder.OrderType.BuildOrderType(),
+                createdAt
+                );
+
+            return order;
+        }
+        public static Order BuildOrder(this Command.PlaceOrder placeOrder, DateTime createdAt)
+        {
+            var order = new Order(
+                placeOrder.OrderId,
+                placeOrder.UserId,
+                placeOrder.CurrencyId,
+                placeOrder.Price,
+                placeOrder.Quantity,
+                placeOrder.OrderType.BuildOrderType(),
                 createdAt
                 );
 

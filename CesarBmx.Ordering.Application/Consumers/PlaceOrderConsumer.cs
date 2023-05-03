@@ -1,29 +1,29 @@
-﻿using CesarBmx.Ordering.Domain.Builders;
-using CesarBmx.Ordering.Persistence.Contexts;
-using CesarBmx.Shared.Messaging.Ordering.Commands;
-using CesarBmx.Shared.Messaging.Ordering.Events;
+﻿ using CesarBmx.Shared.Messaging.Ordering.Events;
 using MassTransit;
-using MassTransit.Transports;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System;
 using System.Threading.Tasks;
 using AutoMapper;
+using CesarBmx.Ordering.Persistence.Contexts;
+using CesarBmx.Ordering.Application.Services;
+using CesarBmx.Shared.Messaging.Ordering.Commands;
 using Microsoft.EntityFrameworkCore;
+using CesarBmx.Ordering.Domain.Builders;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
-    public class CancelOrderConsumer : IConsumer<CancelOrder>
+    public class PlaceOrderConsumer : IConsumer<PlaceOrder>
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
-        private readonly ILogger<CancelOrderConsumer> _logger;
+        private readonly ILogger<PlaceOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
 
-        public CancelOrderConsumer(
+        public PlaceOrderConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
-            ILogger<CancelOrderConsumer> logger,
+            ILogger<PlaceOrderConsumer> logger,
             ActivitySource activitySource)
         {
             _mainDbContext = mainDbContext;
@@ -32,7 +32,7 @@ namespace CesarBmx.Ordering.Application.Consumers
             _activitySource = activitySource;
         }
 
-        public async Task Consume(ConsumeContext<CancelOrder> context)
+        public async Task Consume(ConsumeContext<PlaceOrder> context)
         {
             try
             {
@@ -41,31 +41,31 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(SubmitOrder));
+                using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
-                // Get order
-                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x=>x.OrderId == context.Message.OrderId);
+                // New order
+                var order = OrderBuilder.BuildOrder(context.Message, DateTime.UtcNow);
 
-                // Mark as cancelled
-                order.MarkAsCancelled();
+                // Add
+                await _mainDbContext.Orders.AddAsync(order);
 
-                // Event
-                var orderCancelled = _mapper.Map<OrderCancelled>(order);
+                // Command
+                var orderPlaced = _mapper.Map<OrderPlaced>(order);
 
                 // Publish event
-                await context.Publish(orderCancelled);
+                await context.Publish(orderPlaced);
 
                 // Save
                 await _mainDbContext.SaveChangesAsync();
 
                 // Response
-                await context.RespondAsync(orderCancelled);
+                await context.RespondAsync(orderPlaced);
 
                 // Stop watch
                 stopwatch.Stop();
 
                 // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderCancelled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);               
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
             }
             catch (Exception ex)
             {
@@ -74,5 +74,4 @@ namespace CesarBmx.Ordering.Application.Consumers
             }
         }
     }
-
 }

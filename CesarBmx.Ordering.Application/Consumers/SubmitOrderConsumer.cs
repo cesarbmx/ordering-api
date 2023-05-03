@@ -47,7 +47,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Add
                 await _mainDbContext.Orders.AddAsync(newOrder);              
 
-                // Event
+                // Command
                 var orderSubmitted = _mapper.Map<OrderSubmitted>(newOrder);
 
                 // Publish event

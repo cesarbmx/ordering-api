@@ -33,8 +33,11 @@ namespace CesarBmx.Ordering.Application.Sagas
             Initially(
                 When(OrderSubmitted)                
                     .SetSubmissionDetails()
-                    .TransitionTo(Submitted)
-                    );
+                    .TransitionTo(Submitted),
+                 When(OrderPlaced)
+                    .SetPlacingDetails()
+                     .PublishOrderPlaced()
+                    .TransitionTo(Placed));
 
             During(Submitted,
                 When(OrderPlaced)
@@ -47,6 +50,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 When(OrderFilled)
                     .SetFillingDetails()
                     .PublishOrderFilled()
+                    .Unschedule(ExpirationSchedule)
                     .TransitionTo(Filled)
                     .Finalize());
 
@@ -54,6 +58,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 When(OrderCancelled)
                     .SetCancelationDetails()
                     .PublishOrderCancelled()
+                    .Unschedule(ExpirationSchedule)
                     .TransitionTo(Cancelled)
                     .Finalize());
 
@@ -61,6 +66,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                When(OrderExpired)
                    .SetCancelationDetails()
                    .PublishOrderCancelled()
+                   .Unschedule(ExpirationSchedule)
                    .TransitionTo(Cancelled)
                    .Finalize());
         }
