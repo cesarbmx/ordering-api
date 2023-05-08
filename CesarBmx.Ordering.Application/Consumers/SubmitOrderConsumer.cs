@@ -50,6 +50,12 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Add
                 await _mainDbContext.Orders.AddAsync(order);
 
+                // Command
+                var placeOrder = _mapper.Map<PlaceOrder>(order);
+
+                // Send
+                await context.Send(placeOrder);
+
                 // Save
                 await _mainDbContext.SaveChangesAsync();                
 

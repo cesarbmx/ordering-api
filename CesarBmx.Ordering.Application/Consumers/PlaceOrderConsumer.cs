@@ -41,13 +41,18 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+                using var span = _activitySource.StartActivity(nameof(OrderPlaced));
 
-                // New order
-                var order = OrderBuilder.BuildOrder(context.Message, DateTime.UtcNow);
+                // Event
+                var orderSubmitted = context.Message;
 
-                // Add
-                await _mainDbContext.Orders.AddAsync(order);
+                // TODO: Place order on Binance
+
+                // Get order
+                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderSubmitted.OrderId);
+
+                // Mark as placed
+                order.MarkAsPlaced();
 
                 // Event
                 var orderPlaced = _mapper.Map<OrderPlaced>(order);
@@ -55,17 +60,8 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Publish event
                 await context.Publish(orderPlaced);
 
-                // Event
-                var orderSubmitted = _mapper.Map<OrderSubmitted>(order);
-
-                // Publish event
-                await context.Publish(orderSubmitted);
-
                 // Save
                 await _mainDbContext.SaveChangesAsync();
-
-                // Response
-                await context.RespondAsync(order);
 
                 // Stop watch
                 stopwatch.Stop();
