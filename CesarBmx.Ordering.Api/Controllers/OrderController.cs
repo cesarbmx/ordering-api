@@ -92,6 +92,25 @@ namespace CesarBmx.Ordering.Api.Controllers
             // Return
             return CreatedAtRoute("Orders_GetOrder", new { response.OrderId }, response);
         }
+
+        /// <summary>
+        /// Fill order
+        /// </summary>
+        [HttpPost]
+        [Route("api/fill-order")]
+        [SwaggerResponse(201, Type = typeof(Order))]
+        [SwaggerResponse(400, Type = typeof(BadRequest))]
+        [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
+        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_FillOrder")]
+        public async Task<IActionResult> FillOrder([FromBody] FillOrder request)
+        {
+            // Reponse
+            var response = await _orderService.FillOrder(request);
+
+            // Return
+            return Ok(response);
+        }
     }
 }
 

@@ -2,6 +2,7 @@
 using CesarBmx.Shared.Common.Extensions;
 using MassTransit;
 using CesarBmx.Shared.Messaging.Ordering.Events;
+using CesarBmx.Shared.Messaging.Ordering.Commands;
 
 namespace CesarBmx.Ordering.Application.Sagas
 {
@@ -17,32 +18,34 @@ namespace CesarBmx.Ordering.Application.Sagas
         public DateTime? CancelledAt { get; set; }
     }
 
-    public class OrderStateMachine : MassTransitStateMachine<OrderState>
+    public class OrderSagaStateMachine : MassTransitStateMachine<OrderState>
     {
-        public OrderStateMachine()
+        public OrderSagaStateMachine()
         {
-            InstanceState(x => x.CurrentState, Placed, Filled, Cancelled);
+            InstanceState(x => x.CurrentState, Submitted, Placed, Filled, Cancelled, Expired);
 
             Event(() => OrderSubmitted, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderPlaced, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderFilled, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderCancelled, x => x.CorrelateById(m => m.Message.OrderId));
+            Event(() => OrderExpired, x => x.CorrelateById(m => m.Message.OrderId));
 
-            Schedule(() => ExpirationSchedule, x => x.OrderId, x=>x.Delay = TimeSpan.FromHours(1));
+            //Schedule(() => ExpirationSchedule, x => x.OrderId, x => x.Delay = TimeSpan.FromHours(1));
 
             Initially(
-                When(OrderSubmitted)                
+                When(OrderSubmitted)
                     .SetSubmissionDetails()
+                    .PublishOrderSubmitted()
+                    //.Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new OrderExpired { OrderId = context.Message.OrderId, ExpiredAt = DateTime.UtcNow.StripSeconds() }))
                     .TransitionTo(Submitted),
                  When(OrderPlaced)
                     .SetPlacingDetails()
-                     .PublishOrderPlaced()
+                    .PublishOrderPlaced()
                     .TransitionTo(Placed));
 
             During(Submitted,
                 When(OrderPlaced)
                     .SetPlacingDetails()
-                    .Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new { context.Message.OrderId }))
                     .PublishOrderPlaced()
                     .TransitionTo(Placed));
 
@@ -50,7 +53,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 When(OrderFilled)
                     .SetFillingDetails()
                     .PublishOrderFilled()
-                    .Unschedule(ExpirationSchedule)
+                    //.Unschedule(ExpirationSchedule)
                     .TransitionTo(Filled)
                     .Finalize());
 
@@ -58,15 +61,15 @@ namespace CesarBmx.Ordering.Application.Sagas
                 When(OrderCancelled)
                     .SetCancelationDetails()
                     .PublishOrderCancelled()
-                    .Unschedule(ExpirationSchedule)
+                    //.Unschedule(ExpirationSchedule)
                     .TransitionTo(Cancelled)
                     .Finalize());
 
             During(Placed,
                When(OrderExpired)
-                   .SetCancelationDetails()
+                   .SetExpirationDetails()
                    .PublishOrderCancelled()
-                   .Unschedule(ExpirationSchedule)
+                   //.Unschedule(ExpirationSchedule)
                    .TransitionTo(Cancelled)
                    .Finalize());
         }
@@ -81,6 +84,7 @@ namespace CesarBmx.Ordering.Application.Sagas
         public State Placed { get; private set; }
         public State Filled { get; private set; }
         public State Cancelled { get; private set; }
+        public State Expired { get; private set; }
 
         public Schedule<OrderState, OrderExpired> ExpirationSchedule { get; }
     }
@@ -93,7 +97,7 @@ namespace CesarBmx.Ordering.Application.Sagas
             return binder.Then(x =>
             {
                 x.Saga.OrderId = x.Message.OrderId;
-                x.Saga.SubmittedAt = DateTime.UtcNow.StripSeconds();
+                x.Saga.SubmittedAt = x.Message.SubmittedAt;
             });
         }
         public static EventActivityBinder<OrderState, OrderPlaced> SetPlacingDetails(
@@ -101,7 +105,7 @@ namespace CesarBmx.Ordering.Application.Sagas
         {
             return binder.Then(x =>
             {
-                x.Saga.PlacedAt = DateTime.UtcNow.StripSeconds();
+                x.Saga.PlacedAt = x.Message.PlacedAt;
             });
         }
         public static EventActivityBinder<OrderState, OrderFilled> SetFillingDetails(
@@ -109,7 +113,7 @@ namespace CesarBmx.Ordering.Application.Sagas
         {
             return binder.Then(x =>
             {
-                x.Saga.FilledAt = DateTime.UtcNow.StripSeconds();
+                x.Saga.FilledAt = x.Message.FilledAt;
             });
         }
         public static EventActivityBinder<OrderState, OrderCancelled> SetCancelationDetails(
@@ -117,18 +121,35 @@ namespace CesarBmx.Ordering.Application.Sagas
         {
             return binder.Then(x =>
             {
-                x.Saga.CancelledAt = DateTime.UtcNow.StripSeconds();
+                x.Saga.CancelledAt = x.Message.CancelledAt;
             });
         }
-        public static EventActivityBinder<OrderState, OrderExpired> SetCancelationDetails(
+        public static EventActivityBinder<OrderState, OrderExpired> SetExpirationDetails(
           this EventActivityBinder<OrderState, OrderExpired> binder)
         {
             return binder.Then(x =>
             {
-                x.Saga.CancelledAt = DateTime.UtcNow.StripSeconds();
+                x.Saga.CancelledAt = x.Message.ExpiredAt;
             });
         }
 
+        public static EventActivityBinder<OrderState, OrderSubmitted> PublishOrderSubmitted(
+           this EventActivityBinder<OrderState, OrderSubmitted> binder)
+        {
+            return binder.PublishAsync(context => context.Init<OrderSubmitted>(new OrderSubmitted
+            {
+
+                // TODO: Automapper
+
+                OrderId = context.Message.OrderId,
+                UserId = context.Message.UserId,
+                CurrencyId = context.Message.CurrencyId,
+                Price = context.Message.Price,
+                OrderType = context.Message.OrderType,
+                Quantity = context.Message.Quantity,
+                SubmittedAt = context.Message.SubmittedAt
+            }));
+        }
         public static EventActivityBinder<OrderState, OrderPlaced> PublishOrderPlaced(
            this EventActivityBinder<OrderState, OrderPlaced> binder)
         {
@@ -143,7 +164,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 Price = context.Message.Price,
                 OrderType = context.Message.OrderType,
                 Quantity = context.Message.Quantity,
-                CreatedAt = context.Message.CreatedAt               
+                PlacedAt = context.Message.PlacedAt               
             }));
         }
         public static EventActivityBinder<OrderState, OrderFilled> PublishOrderFilled(
@@ -160,7 +181,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 Price = context.Message.Price,
                 OrderType = context.Message.OrderType,
                 Quantity = context.Message.Quantity,
-                CreatedAt = context.Message.CreatedAt
+                FilledAt = context.Message.FilledAt
             }));
         }
         public static EventActivityBinder<OrderState, OrderCancelled> PublishOrderCancelled(
@@ -177,7 +198,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 Price = context.Message.Price,
                 OrderType = context.Message.OrderType,
                 Quantity = context.Message.Quantity,
-                CreatedAt = context.Message.CreatedAt
+                CancelledAt = context.Message.CancelledAt
             }));
         }
         public static EventActivityBinder<OrderState, OrderExpired> PublishOrderCancelled(
@@ -194,7 +215,7 @@ namespace CesarBmx.Ordering.Application.Sagas
                 Price = context.Message.Price,
                 OrderType = context.Message.OrderType,
                 Quantity = context.Message.Quantity,
-                CreatedAt = context.Message.CreatedAt
+                ExpiredAt = context.Message.ExpiredAt
             }));
         }
     }

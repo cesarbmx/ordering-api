@@ -1,6 +1,7 @@
 ﻿using CesarBmx.Shared.Api.Configuration;
 using CesarBmx.Ordering.Persistence.Contexts;
 using CesarBmx.Ordering.Application.Consumers;
+using CesarBmx.Ordering.Application.Sagas;
 
 namespace CesarBmx.Ordering.Api.Configuration
 {
@@ -9,7 +10,7 @@ namespace CesarBmx.Ordering.Api.Configuration
         public static IServiceCollection ConfigureMasstransit(this IServiceCollection services, IConfiguration configuration)
         {
             // Shared
-            services.ConfigureSharedMasstransit<MainDbContext, SubmitOrderConsumer>(configuration);
+            services.ConfigureSharedMasstransit<MainDbContext>(configuration, typeof(OrderPlacedConsumer), typeof(OrderSagaStateMachine));
 
             // Return
             return services;

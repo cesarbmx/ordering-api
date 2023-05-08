@@ -41,23 +41,20 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Start span
                 using var span = _activitySource.StartActivity(nameof(SubmitOrder));
 
+                // Command
+                var submitOrder = context.Message;
+
                 // New order
-                var newOrder = OrderBuilder.BuildOrder(context.Message, DateTime.UtcNow);
+                var order = OrderBuilder.BuildOrder(submitOrder, DateTime.UtcNow);
 
                 // Add
-                await _mainDbContext.Orders.AddAsync(newOrder);              
-
-                // Command
-                var orderSubmitted = _mapper.Map<OrderSubmitted>(newOrder);
-
-                // Publish event
-                await context.Publish(orderSubmitted);
+                await _mainDbContext.Orders.AddAsync(order);
 
                 // Save
-                await _mainDbContext.SaveChangesAsync();
+                await _mainDbContext.SaveChangesAsync();                
 
                 // Response
-                await context.RespondAsync(orderSubmitted);
+                await context.RespondAsync(order);
 
                 // Stop watch
                 stopwatch.Stop();

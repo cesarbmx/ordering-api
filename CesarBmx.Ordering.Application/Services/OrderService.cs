@@ -14,6 +14,7 @@ using CesarBmx.Ordering.Domain.Builders;
 using CesarBmx.Shared.Messaging.Ordering.Events;
 using CesarBmx.Ordering.Application.Requests;
 using CesarBmx.Ordering.Domain.Models;
+using MassTransit.Transports;
 
 namespace CesarBmx.Ordering.Application.Services
 {
@@ -23,20 +24,20 @@ namespace CesarBmx.Ordering.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<OrderService> _logger;
         private readonly ActivitySource _activitySource;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IBus _bus;
 
         public OrderService(
             MainDbContext mainDbContext,
             IMapper mapper,
             ILogger<OrderService> logger,
             ActivitySource activitySource,
-            IPublishEndpoint publishEndpoint)
+            IBus bus)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
-            _publishEndpoint = publishEndpoint;
+            _bus = bus;
         }
 
         public async Task<List<Responses.Order>> GetOrders(string userId)
@@ -89,7 +90,7 @@ namespace CesarBmx.Ordering.Application.Services
             var orderSubmitted = _mapper.Map<List<OrderSubmitted>>(order);
 
             // Publish event
-            await _publishEndpoint.Publish(orderSubmitted);
+            await _bus.Publish(orderSubmitted);
 
             // Save
             await _mainDbContext.SaveChangesAsync();
@@ -127,10 +128,10 @@ namespace CesarBmx.Ordering.Application.Services
             var response = _mapper.Map<Responses.Order>(order);
 
             // Event
-            var orderSubmitted = _mapper.Map<List<OrderSubmitted>>(order);
+            var ordersPlaced = _mapper.Map<List<OrderPlaced>>(order);
 
             // Publish event
-            await _publishEndpoint.Publish(orderSubmitted);
+            await _bus.Publish(ordersPlaced);
 
             // Save
             await _mainDbContext.SaveChangesAsync();
@@ -140,6 +141,45 @@ namespace CesarBmx.Ordering.Application.Services
 
             // Log
             _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+
+            // Return
+            return response;
+        }
+        public async Task<Responses.Order> FillOrder(FillOrder fillOrder)
+        {
+            // Start watch
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // Start span
+            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+
+            // Get order
+            var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == fillOrder.OrderId);
+
+            // Mark as filled
+            order.MarkAsFilled();
+
+            // Update
+            _mainDbContext.Orders.Update(order);
+
+            // Response
+            var response = _mapper.Map<Responses.Order>(order);
+
+            // Event
+            var orderFilled = _mapper.Map<List<OrderFilled>>(order);
+
+            // Publish event
+            await _bus.Publish(orderFilled);
+
+            // Save
+            await _mainDbContext.SaveChangesAsync();
+
+            // Stop watch
+            stopwatch.Stop();
+
+            // Log
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderFilled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
             // Return
             return response;
@@ -166,10 +206,10 @@ namespace CesarBmx.Ordering.Application.Services
             await _mainDbContext.SaveChangesAsync();
 
             // Event
-            var orderPlaced = _mapper.Map<List<OrderPlaced>>(order);
+            var ordersPlaced = _mapper.Map<List<OrderPlaced>>(order);
 
             // Publish event
-            await _publishEndpoint.Publish(orderPlaced);
+            await _bus.Publish(ordersPlaced);
 
             // Stop watch
             stopwatch.Stop();

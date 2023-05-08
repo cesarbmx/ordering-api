@@ -49,17 +49,23 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Add
                 await _mainDbContext.Orders.AddAsync(order);
 
-                // Command
+                // Event
                 var orderPlaced = _mapper.Map<OrderPlaced>(order);
 
                 // Publish event
                 await context.Publish(orderPlaced);
 
+                // Event
+                var orderSubmitted = _mapper.Map<OrderSubmitted>(order);
+
+                // Publish event
+                await context.Publish(orderSubmitted);
+
                 // Save
                 await _mainDbContext.SaveChangesAsync();
 
                 // Response
-                await context.RespondAsync(orderPlaced);
+                await context.RespondAsync(order);
 
                 // Stop watch
                 stopwatch.Stop();

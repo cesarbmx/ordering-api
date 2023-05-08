@@ -14,9 +14,11 @@ namespace CesarBmx.Ordering.Domain.Models
         public OrderType OrderType { get; private set; }
         public decimal Quantity { get; private set; }
         public OrderStatus OrderStatus { get; private set; }
+        public DateTime? Submitted { get; private set; }
         public DateTime? PlacedAt { get; private set; }
         public DateTime? FilledAt { get; private set; }
         public DateTime? CancelledAt { get; private set; }
+        public DateTime? ExpiredAt { get; private set; }
 
         public Order() { }
         public Order(

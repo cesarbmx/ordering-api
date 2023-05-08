@@ -11,17 +11,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
-    public class OrderSubmittedConsumer : IConsumer<OrderSubmitted>
+    public class OrderFilledConsumer : IConsumer<OrderFilled>
     {
         private readonly MainDbContext _mainDbContext;
         private readonly IMapper _mapper;
-        private readonly ILogger<OrderSubmittedConsumer> _logger;
+        private readonly ILogger<OrderFilledConsumer> _logger;
         private readonly ActivitySource _activitySource;
 
-        public OrderSubmittedConsumer(
+        public OrderFilledConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
-            ILogger<OrderSubmittedConsumer> logger,
+            ILogger<OrderFilledConsumer> logger,
             ActivitySource activitySource)
         {
             _mainDbContext = mainDbContext;
@@ -30,7 +30,7 @@ namespace CesarBmx.Ordering.Application.Consumers
             _activitySource = activitySource;
         }
 
-        public async Task Consume(ConsumeContext<OrderSubmitted> context)
+        public async Task Consume(ConsumeContext<OrderFilled> context)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(OrderSubmitted));
+                using var span = _activitySource.StartActivity(nameof(OrderFilled));
 
                 // Event
                 var orderSubmitted = context.Message;
@@ -49,8 +49,8 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Get order
                 var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderSubmitted.OrderId);
 
-                // Mark as cancelled
-                order.MarkAsCancelled();
+                // Mark as Filled
+                order.MarkAsFilled();
 
                 // Save
                 await _mainDbContext.SaveChangesAsync();                        
@@ -59,7 +59,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Stop();
 
                 // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderFilled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
             }
             catch(Exception ex)
             {

@@ -41,7 +41,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(SubmitOrder));
+                using var span = _activitySource.StartActivity(nameof(CancelOrder));
 
                 // Get order
                 var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x=>x.OrderId == context.Message.OrderId);
@@ -49,17 +49,11 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Mark as cancelled
                 order.MarkAsCancelled();
 
-                // Event
-                var orderCancelled = _mapper.Map<OrderCancelled>(order);
-
-                // Publish event
-                await context.Publish(orderCancelled);
-
                 // Save
                 await _mainDbContext.SaveChangesAsync();
 
                 // Response
-                await context.RespondAsync(orderCancelled);
+                await context.RespondAsync(order);
 
                 // Stop watch
                 stopwatch.Stop();

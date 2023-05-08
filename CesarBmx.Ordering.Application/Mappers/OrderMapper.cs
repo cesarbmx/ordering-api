@@ -14,13 +14,13 @@ namespace CesarBmx.Ordering.Application.Mappers
 
             // Model to Event
             CreateMap<Order, OrderSubmitted>();
-            CreateMap<Order, OrderPlaced>();         
+            CreateMap<Order, OrderPlaced>();
+            CreateMap<Order, OrderCancelled>();
+            CreateMap<Order, OrderFilled>();
 
             // Model to Command
-            CreateMap<Order, PlaceOrder>();
-
-            // Event to Event
-            CreateMap<OrderSubmitted, OrderPlaced>();
+            CreateMap<PlaceOrder, Order>();
+            CreateMap<SubmitOrder, Order>();
         }
     }
 }
