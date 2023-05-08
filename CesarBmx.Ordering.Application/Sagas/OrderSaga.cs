@@ -89,7 +89,7 @@ namespace CesarBmx.Ordering.Application.Sagas
         public Schedule<OrderSagaState, OrderExpired> ExpirationSchedule { get; }
     }
 
-    public static class OrderStateMachineExtensions
+    public static class OrderSagaExtensions
     {
         public static EventActivityBinder<OrderSagaState, OrderSubmitted> SetSubmissionDetails(
             this EventActivityBinder<OrderSagaState, OrderSubmitted> binder)
