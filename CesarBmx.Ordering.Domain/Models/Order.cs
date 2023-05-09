@@ -42,7 +42,7 @@ namespace CesarBmx.Ordering.Domain.Models
 
         public Order MarkAsPlaced()
         {
-            OrderStatus = OrderStatus.FILLED;
+            OrderStatus = OrderStatus.PLACED;
             PlacedAt = DateTime.UtcNow.StripSeconds();
 
             return this;

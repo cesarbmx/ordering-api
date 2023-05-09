@@ -54,12 +54,6 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Mark as placed
                 order.MarkAsPlaced();
 
-                // Event
-                var orderPlaced = _mapper.Map<OrderPlaced>(order);
-
-                // Publish
-                await context.Publish(orderPlaced);
-
                 // Save
                 await _mainDbContext.SaveChangesAsync();
 
@@ -68,6 +62,12 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 // Log
                 _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+
+                // Event
+                var orderPlaced = _mapper.Map<OrderPlaced>(order);
+
+                // Publish
+                await context.Publish(orderPlaced);
             }
             catch (Exception ex)
             {
