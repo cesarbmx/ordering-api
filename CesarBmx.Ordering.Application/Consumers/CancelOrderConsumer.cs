@@ -49,6 +49,12 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Mark as cancelled
                 order.MarkAsCancelled();
 
+                // Event
+                var orderCancelled = _mapper.Map<OrderCancelled>(order);
+
+                // Publish
+                await context.Publish(orderCancelled);
+
                 // Save
                 await _mainDbContext.SaveChangesAsync();
 

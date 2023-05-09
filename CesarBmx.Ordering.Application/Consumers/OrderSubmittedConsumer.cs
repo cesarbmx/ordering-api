@@ -1,4 +1,4 @@
-﻿// using CesarBmx.Shared.Messaging.Ordering.Events;
+﻿//using CesarBmx.Shared.Messaging.Ordering.Events;
 //using MassTransit;
 //using Microsoft.Extensions.Logging;
 //using System.Diagnostics;
@@ -53,7 +53,7 @@
 //                order.MarkAsPlaced();
 
 //                // Save
-//                await _mainDbContext.SaveChangesAsync();                        
+//                await _mainDbContext.SaveChangesAsync();
 
 //                // Stop watch
 //                stopwatch.Stop();
@@ -61,7 +61,7 @@
 //                // Log
 //                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 //            }
-//            catch(Exception ex)
+//            catch (Exception ex)
 //            {
 //                // Log
 //                _logger.LogError(ex, ex.Message);

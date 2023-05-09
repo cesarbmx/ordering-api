@@ -10,7 +10,7 @@ namespace CesarBmx.Ordering.Api.Configuration
         public static IServiceCollection ConfigureMasstransit(this IServiceCollection services, IConfiguration configuration)
         {
             // Shared
-            services.ConfigureSharedMasstransit<MainDbContext>(configuration, typeof(OrderPlacedConsumer), typeof(OrderSaga));
+            services.ConfigureSharedMasstransit<MainDbContext>(configuration, typeof(PlaceOrderConsumer), typeof(OrderSaga));
 
             // Return
             return services;

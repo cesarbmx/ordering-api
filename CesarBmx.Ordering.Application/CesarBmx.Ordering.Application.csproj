@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Consumers\OrderFilledConsumer.cs" />
+    <Compile Remove="Consumers\OrderPlacedConsumer.cs" />
+    <Compile Remove="Consumers\OrderSubmittedConsumer.cs" />
     <Compile Remove="Services\IndicatorDependencyService.cs" />
   </ItemGroup>
 

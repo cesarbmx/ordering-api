@@ -35,24 +35,20 @@ namespace CesarBmx.Ordering.Application.Sagas
             Initially(
                 When(OrderSubmitted)
                     .SetSubmissionDetails()
-                    .PublishOrderSubmitted()
+                    //.PublishOrderSubmitted()
                     //.Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new OrderExpired { OrderId = context.Message.OrderId, ExpiredAt = DateTime.UtcNow.StripSeconds() }))
-                    .TransitionTo(Submitted),
-                 When(OrderPlaced)
-                    .SetPlacingDetails()
-                    .PublishOrderPlaced()
-                    .TransitionTo(Placed));
+                    .TransitionTo(Submitted));               
 
             During(Submitted,
                 When(OrderPlaced)
                     .SetPlacingDetails()
-                    .PublishOrderPlaced()
-                    .TransitionTo(Placed));
+                    //.Unschedule(ExpirationSchedule)
+                    .TransitionTo(Placed)
+                    .Finalize());
 
             During(Placed,
                 When(OrderFilled)
                     .SetFillingDetails()
-                    .PublishOrderFilled()
                     //.Unschedule(ExpirationSchedule)
                     .TransitionTo(Filled)
                     .Finalize());
@@ -60,7 +56,6 @@ namespace CesarBmx.Ordering.Application.Sagas
             During(Placed,
                 When(OrderCancelled)
                     .SetCancelationDetails()
-                    .PublishOrderCancelled()
                     //.Unschedule(ExpirationSchedule)
                     .TransitionTo(Cancelled)
                     .Finalize());
@@ -68,8 +63,8 @@ namespace CesarBmx.Ordering.Application.Sagas
             During(Placed,
                When(OrderExpired)
                    .SetExpirationDetails()
-                   .PublishOrderCancelled()
-                   //.Unschedule(ExpirationSchedule)
+                   //.PublishOrderCancelled()
+                   .Unschedule(ExpirationSchedule)
                    .TransitionTo(Cancelled)
                    .Finalize());
         }

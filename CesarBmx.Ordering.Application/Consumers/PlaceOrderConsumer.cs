@@ -57,7 +57,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Event
                 var orderPlaced = _mapper.Map<OrderPlaced>(order);
 
-                // Publish event
+                // Publish
                 await context.Publish(orderPlaced);
 
                 // Save
