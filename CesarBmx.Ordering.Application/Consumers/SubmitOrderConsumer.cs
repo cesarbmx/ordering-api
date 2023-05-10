@@ -68,8 +68,8 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Event
                 var orderSubmitted = _mapper.Map<OrderSubmitted>(order);
 
-                // Publish
-                await context.Publish(orderSubmitted);
+                //// Publish
+                //await context.Publish(orderSubmitted);
 
                 // Response
                 await context.RespondAsync(orderSubmitted);

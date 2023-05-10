@@ -21,6 +21,7 @@ namespace CesarBmx.Ordering.Application.Mappers
             // Model to Command
             CreateMap<Order, SubmitOrder>();
             CreateMap<Order, PlaceOrder>();
+            CreateMap<Order, CancelOrder>();
         }
     }
 }
