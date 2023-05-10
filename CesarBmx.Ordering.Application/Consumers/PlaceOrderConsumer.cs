@@ -68,6 +68,9 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 // Publish
                 await context.Publish(orderPlaced);
+
+                // Response
+                await context.RespondAsync(orderPlaced);
             }
             catch (Exception ex)
             {

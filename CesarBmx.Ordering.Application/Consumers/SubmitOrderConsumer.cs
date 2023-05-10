@@ -51,10 +51,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 await _mainDbContext.Orders.AddAsync(order);
 
                 // Save
-                await _mainDbContext.SaveChangesAsync();
-
-                // Response
-                await context.RespondAsync(order);
+                await _mainDbContext.SaveChangesAsync();               
 
                 // Stop watch
                 stopwatch.Stop();
@@ -72,7 +69,10 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var orderSubmitted = _mapper.Map<OrderSubmitted>(order);
 
                 // Publish
-                await context.Publish(orderSubmitted);   
+                await context.Publish(orderSubmitted);
+
+                // Response
+                await context.RespondAsync(orderSubmitted);
             }
             catch(Exception ex)
             {

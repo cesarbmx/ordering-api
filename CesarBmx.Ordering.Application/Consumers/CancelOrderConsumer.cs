@@ -55,9 +55,6 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Event
                 var orderCancelled = _mapper.Map<OrderCancelled>(order);
 
-                // Response
-                await context.RespondAsync(order);
-
                 // Stop watch
                 stopwatch.Stop();
 
@@ -65,7 +62,10 @@ namespace CesarBmx.Ordering.Application.Consumers
                 _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderCancelled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
                 // Publish
-                await context.Publish(orderCancelled);           
+                await context.Publish(orderCancelled);
+
+                // Response
+                await context.RespondAsync(orderCancelled);
             }
             catch (Exception ex)
             {
