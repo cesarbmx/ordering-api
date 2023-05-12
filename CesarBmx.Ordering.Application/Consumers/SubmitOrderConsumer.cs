@@ -50,15 +50,6 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Add
                 await _mainDbContext.Orders.AddAsync(order);
 
-                // Save
-                await _mainDbContext.SaveChangesAsync();               
-
-                // Stop watch
-                stopwatch.Stop();
-
-                // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderSubmitted), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
-
                 // Command
                 var placeOrder = _mapper.Map<PlaceOrder>(order);
 
@@ -68,11 +59,18 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Event
                 var orderSubmitted = _mapper.Map<OrderSubmitted>(order);
 
-                //// Publish
-                //await context.Publish(orderSubmitted);
-
                 // Response
                 await context.RespondAsync(orderSubmitted);
+
+                // Save
+                await _mainDbContext.SaveChangesAsync();               
+
+                // Stop watch
+                stopwatch.Stop();
+
+                // Log
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderSubmitted), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+                
             }
             catch(Exception ex)
             {

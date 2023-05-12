@@ -48,24 +48,26 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 // Mark as cancelled
                 order.MarkAsCancelled();
+              
+                // Event
+                var orderCancelled = _mapper.Map<OrderCancelled>(order);
+
+                // Response
+                await context.RespondAsync(orderCancelled);
+
+                // Publish
+                if (context.IsResponseAccepted<OrderCancelled>()) 
+                    await context.Publish(orderCancelled);
 
                 // Save
-                await _mainDbContext.SaveChangesAsync();                
+                await _mainDbContext.SaveChangesAsync();
 
                 // Stop watch
                 stopwatch.Stop();
 
                 // Log
                 _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderCancelled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
-
-                // Event
-                var orderCancelled = _mapper.Map<OrderCancelled>(order);
-
-                //// Publish
-                //await context.Publish(orderCancelled);
-
-                // Response
-                await context.RespondAsync(orderCancelled);
+              
             }
             catch (Exception ex)
             {

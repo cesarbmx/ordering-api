@@ -10,7 +10,6 @@
     <Compile Remove="Consumers\OrderFilledConsumer.cs" />
     <Compile Remove="Consumers\OrderPlacedConsumer.cs" />
     <Compile Remove="Consumers\OrderSubmittedConsumer.cs" />
-    <Compile Remove="Sagas\OrderSaga.cs" />
     <Compile Remove="Services\IndicatorDependencyService.cs" />
   </ItemGroup>
 
@@ -59,7 +58,6 @@
 
   <ItemGroup>
     <Folder Include="FakeRequests\" />
-    <Folder Include="Sagas\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
