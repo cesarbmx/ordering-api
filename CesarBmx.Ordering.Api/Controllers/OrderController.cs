@@ -63,7 +63,7 @@ namespace CesarBmx.Ordering.Api.Controllers
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<SubmitOrderConflict>))]
-        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerResponse(422, Type = typeof(ValidationFailed))]
         [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_SubmitOrder")]
         public async Task<IActionResult> SubmitOrder([FromBody] SubmitOrder request)
         {
@@ -82,7 +82,7 @@ namespace CesarBmx.Ordering.Api.Controllers
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
-        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerResponse(422, Type = typeof(ValidationFailed))]
         [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_PlaceOrder")]
         public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrder request)
         {
@@ -101,7 +101,7 @@ namespace CesarBmx.Ordering.Api.Controllers
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
-        [SwaggerResponse(422, Type = typeof(Validation))]
+        [SwaggerResponse(422, Type = typeof(ValidationFailed))]
         [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_FillOrder")]
         public async Task<IActionResult> FillOrder([FromBody] FillOrder request)
         {
