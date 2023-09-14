@@ -6,9 +6,10 @@ using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Ordering.Persistence.Contexts;
-using CesarBmx.Ordering.Application.Services;
 using CesarBmx.Shared.Messaging.Ordering.Commands;
-using Microsoft.EntityFrameworkCore;
+using CesarBmx.Ordering.Domain.Models;
+using CesarBmx.Shared.Messaging.Notification.Commands;
+using CesarBmx.Shared.Messaging.Notification.Types;
 using CesarBmx.Ordering.Domain.Builders;
 
 namespace CesarBmx.Ordering.Application.Consumers
@@ -19,17 +20,20 @@ namespace CesarBmx.Ordering.Application.Consumers
         private readonly IMapper _mapper;
         private readonly ILogger<PlaceOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
+        private readonly IBus _bus;
 
         public PlaceOrderConsumer(
             MainDbContext mainDbContext,
             IMapper mapper,
             ILogger<PlaceOrderConsumer> logger,
-            ActivitySource activitySource)
+            ActivitySource activitySource,
+            IBus bus)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
+            _bus = bus;
         }
 
         public async Task Consume(ConsumeContext<PlaceOrder> context)
@@ -43,19 +47,25 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Start span
                 using var span = _activitySource.StartActivity(nameof(OrderPlaced));
 
-                // Event
-                var orderSubmitted = context.Message;
+                // Command
+                var placeOrder = context.Message;
 
                 // TODO: Place order on Binance
 
-                // Get order
-                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderSubmitted.OrderId);
+                // Create order
+                var order = _mapper.Map<Order>(placeOrder);
 
-                // Mark as placed
-                order.MarkAsPlaced();
+                // Add order
+                await _mainDbContext.Orders.AddAsync(order);
 
-                // Event
-                var orderPlaced = _mapper.Map<OrderPlaced>(order);
+                 // Event
+                 var orderPlaced = _mapper.Map<OrderPlaced>(order);
+
+                // Command notification
+                var sendNotification = order.BuildSendNotification();
+
+                // Send notification
+                await _bus.Send(sendNotification);
 
                 // Response
                 await context.RespondAsync(orderPlaced);

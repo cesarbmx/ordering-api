@@ -24,25 +24,17 @@ namespace CesarBmx.Ordering.Application.Sagas
         {
             InstanceState(x => x.CurrentState, Submitted, Placed, Filled, Cancelled, Expired);
 
-            Event(() => OrderSubmitted, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderPlaced, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderFilled, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderCancelled, x => x.CorrelateById(m => m.Message.OrderId));
             Event(() => OrderExpired, x => x.CorrelateById(m => m.Message.OrderId));
 
-            //Schedule(() => ExpirationSchedule, x => x.OrderId, x => x.Delay = TimeSpan.FromHours(1));
+            //Schedule(() => ExpirationSchedule, x => x.OrderId, x => x.Delay = TimeSpan.FromHours(1));           
 
             Initially(
-                When(OrderSubmitted)
-                    .SetSubmissionDetails()
-                    //.PublishOrderSubmitted()
-                    //.Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new OrderExpired { OrderId = context.Message.OrderId, ExpiredAt = DateTime.UtcNow.StripSeconds() }))
-                    .TransitionTo(Submitted));               
-
-            During(Submitted,
                 When(OrderPlaced)
                     .SetPlacingDetails()
-                    //.Unschedule(ExpirationSchedule)
+                    //.Schedule(ExpirationSchedule, context => context.Init<OrderExpired>(new OrderExpired { OrderId = context.Message.OrderId, ExpiredAt = DateTime.UtcNow.StripSeconds() }))
                     .TransitionTo(Placed)
                     .Finalize());
 
@@ -68,8 +60,6 @@ namespace CesarBmx.Ordering.Application.Sagas
                    .TransitionTo(Cancelled)
                    .Finalize());
         }
-
-        public Event<OrderSubmitted> OrderSubmitted { get; private set; }
         public Event<OrderPlaced> OrderPlaced { get; private set; }
         public Event<OrderFilled> OrderFilled { get; private set; }
         public Event<OrderCancelled> OrderCancelled { get; private set; }
@@ -86,15 +76,6 @@ namespace CesarBmx.Ordering.Application.Sagas
 
     public static class OrderSagaExtensions
     {
-        public static EventActivityBinder<OrderSagaState, OrderSubmitted> SetSubmissionDetails(
-            this EventActivityBinder<OrderSagaState, OrderSubmitted> binder)
-        {
-            return binder.Then(x =>
-            {
-                x.Saga.OrderId = x.Message.OrderId;
-                x.Saga.SubmittedAt = x.Message.SubmittedAt;
-            });
-        }
         public static EventActivityBinder<OrderSagaState, OrderPlaced> SetPlacingDetails(
            this EventActivityBinder<OrderSagaState, OrderPlaced> binder)
         {
@@ -126,25 +107,7 @@ namespace CesarBmx.Ordering.Application.Sagas
             {
                 x.Saga.CancelledAt = x.Message.ExpiredAt;
             });
-        }
-
-        public static EventActivityBinder<OrderSagaState, OrderSubmitted> PublishOrderSubmitted(
-           this EventActivityBinder<OrderSagaState, OrderSubmitted> binder)
-        {
-            return binder.PublishAsync(context => context.Init<OrderSubmitted>(new OrderSubmitted
-            {
-
-                // TODO: Automapper
-
-                OrderId = context.Message.OrderId,
-                UserId = context.Message.UserId,
-                CurrencyId = context.Message.CurrencyId,
-                Price = context.Message.Price,
-                OrderType = context.Message.OrderType,
-                Quantity = context.Message.Quantity,
-                SubmittedAt = context.Message.SubmittedAt
-            }));
-        }
+        }      
         public static EventActivityBinder<OrderSagaState, OrderPlaced> PublishOrderPlaced(
            this EventActivityBinder<OrderSagaState, OrderPlaced> binder)
         {

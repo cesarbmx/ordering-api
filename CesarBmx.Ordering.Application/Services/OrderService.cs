@@ -68,42 +68,6 @@ namespace CesarBmx.Ordering.Application.Services
             // Return
             return response;
         }
-        public async Task<Responses.Order> SubmitOrder(SubmitOrder submitOrder)
-        {
-            // Start watch
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            // Start span
-            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
-
-            // New order
-            var order = OrderBuilder.BuildOrder(submitOrder, DateTime.UtcNow);
-
-            // Add
-            await _mainDbContext.Orders.AddAsync(order);           
-
-            // Response
-            var response = _mapper.Map<Responses.Order>(order);
-
-            // Event
-            var orderSubmitted = _mapper.Map<List<OrderSubmitted>>(order);
-
-            // Publish event
-            await _bus.Publish(orderSubmitted);
-
-            // Save
-            await _mainDbContext.SaveChangesAsync();
-
-            // Stop watch
-            stopwatch.Stop();
-
-            // Log
-            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderSubmitted), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
-
-            // Return
-            return response;
-        }
         public async Task<Responses.Order> PlaceOrder(PlaceOrder placeOrder)
         {
             // Start watch

@@ -56,29 +56,10 @@ namespace CesarBmx.Ordering.Api.Controllers
         }
 
         /// <summary>
-        /// Submit order
-        /// </summary>
-        [HttpPost]
-        [Route("api/submit-order")]
-        [SwaggerResponse(201, Type = typeof(Order))]
-        [SwaggerResponse(400, Type = typeof(BadRequest))]
-        [SwaggerResponse(409, Type = typeof(Conflict<SubmitOrderConflict>))]
-        [SwaggerResponse(422, Type = typeof(ValidationFailed))]
-        [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_SubmitOrder")]
-        public async Task<IActionResult> SubmitOrder([FromBody] SubmitOrder request)
-        {
-            // Reponse
-            var response = await _orderService.SubmitOrder(request);
-
-            // Return
-            return CreatedAtRoute("Orders_GetOrder", new { response.OrderId }, response);
-        }
-
-        /// <summary>
         /// Place order
         /// </summary>
         [HttpPost]
-        [Route("api/place-order")]
+        [Route("api/orders")]
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
@@ -97,14 +78,17 @@ namespace CesarBmx.Ordering.Api.Controllers
         /// Fill order
         /// </summary>
         [HttpPost]
-        [Route("api/fill-order")]
+        [Route("api/orders/{orderId}/fill-order")]
         [SwaggerResponse(201, Type = typeof(Order))]
         [SwaggerResponse(400, Type = typeof(BadRequest))]
         [SwaggerResponse(409, Type = typeof(Conflict<PlaceOrderConflict>))]
         [SwaggerResponse(422, Type = typeof(ValidationFailed))]
         [SwaggerOperation(Tags = new[] { "Orders" }, OperationId = "Orders_FillOrder")]
-        public async Task<IActionResult> FillOrder([FromBody] FillOrder request)
+        public async Task<IActionResult> FillOrder(Guid orderId, [FromBody] FillOrder request)
         {
+            // Request
+            request.OrderId = orderId;
+
             // Reponse
             var response = await _orderService.FillOrder(request);
 
