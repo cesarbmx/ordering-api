@@ -30,9 +30,9 @@ namespace CesarBmx.Ordering.Domain.Builders
             var sendNotification = new SendNotification
             {
                 NotificationId = Guid.NewGuid(),
-                NotificationType = NotificationType.TELEGRAM,
-                PhoneNumber = "+34666333222",
-                Text = order.BuildNotificationText()
+                UserId = order.UserId,
+                Text = order.BuildNotificationText(),
+                ScheduledFor = null
             };
 
             return sendNotification;
@@ -42,9 +42,9 @@ namespace CesarBmx.Ordering.Domain.Builders
             switch (order.OrderType)
             {
                 case OrderType.BUY:
-                    return "Order placed: " + order.Price + "order.CurrencyId bought";
+                    return "Order placed: " + order.Price + " bought";
                 case OrderType.SELL:
-                    return "Order placed: " + order.Price + "order.CurrencyId sold";
+                    return "Order placed: " + order.Price + " sold";
                 default:
                     throw new NotImplementedException(order.OrderType + " not supported");
             }
