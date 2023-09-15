@@ -15,14 +15,14 @@ namespace CesarBmx.Ordering.Persistence.Contexts
         {
         }
 
-        [SuppressMessage("ReSharper", "ObjectCreationAsStatement")]
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Order>().Map();
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.UseMasstransit();
+            // Masstransit outbox
+            modelBuilder.UseMasstransitOutbox();
         }
     }
 }

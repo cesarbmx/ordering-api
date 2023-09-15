@@ -61,10 +61,10 @@ namespace CesarBmx.Ordering.Application.Consumers
                  // Event
                  var orderPlaced = _mapper.Map<OrderPlaced>(order);
 
-                // Command notification
-                var sendNotification = order.BuildSendNotification();
+                // Command
+                var sendNotification = order.BuildSendMessage();
 
-                // Send notification
+                // Send message
                 await _bus.Send(sendNotification);
 
                 // Response

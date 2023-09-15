@@ -3,51 +3,46 @@ using CesarBmx.Ordering.Application.Requests;
 using CesarBmx.Ordering.Domain.Models;
 using CesarBmx.Ordering.Domain.Types;
 using CesarBmx.Shared.Messaging.Notification.Commands;
-using CesarBmx.Shared.Messaging.Notification.Types;
-using Command = CesarBmx.Shared.Messaging.Ordering.Commands;
-using CommandType = CesarBmx.Shared.Messaging.Ordering.Types;
+using CesarBmx.Shared.Common.Extensions;
 
-namespace CesarBmx.Ordering.Domain.Builders
+public static class OrderBuilder
 {
-    public static class OrderBuilder
+    public static Order BuildOrder(this PlaceOrder placeOrder, DateTime createdAt)
     {
-        public static Order BuildOrder(this PlaceOrder placeOrder, DateTime createdAt)
-        {
-            var order = new Order(
-                Guid.NewGuid(),
-                placeOrder.UserId,
-                placeOrder.CurrencyId,
-                placeOrder.Price,
-                placeOrder.Quantity,
-                placeOrder.OrderType,
-                createdAt
-                );
+        var order = new Order(
+            Guid.NewGuid(),
+            placeOrder.UserId,
+            placeOrder.CurrencyId,
+            placeOrder.Price,
+            placeOrder.Quantity,
+            placeOrder.OrderType,
+            createdAt
+            );
 
-            return order;
-        }
-        public static SendNotification BuildSendNotification(this Order order)
+        return order;
+    }
+    public static SendMessage BuildSendMessage(this Order order)
+    {
+        var sendNotification = new SendMessage
         {
-            var sendNotification = new SendNotification
-            {
-                NotificationId = Guid.NewGuid(),
-                UserId = order.UserId,
-                Text = order.BuildNotificationText(),
-                ScheduledFor = null
-            };
+            NotificationId = Guid.NewGuid(),
+            UserId = order.UserId,
+            Text = order.BuildMessageText(),
+            ScheduledFor = null
+        };
 
-            return sendNotification;
-        }
-        public static string BuildNotificationText(this Order order)
+        return sendNotification;
+    }
+    public static string BuildMessageText(this Order order)
+    {
+        switch (order.OrderType)
         {
-            switch (order.OrderType)
-            {
-                case OrderType.BUY:
-                    return "Order placed: " + order.Price + " bought";
-                case OrderType.SELL:
-                    return "Order placed: " + order.Price + " sold";
-                default:
-                    throw new NotImplementedException(order.OrderType + " not supported");
-            }
+            case OrderType.BUY:
+                return "Order placed: " + order.Price.Normalize() + " bought";
+            case OrderType.SELL:
+                return "Order placed: " + order.Price.Normalize() + " sold";
+            default:
+                throw new NotImplementedException(order.OrderType + " not supported");
         }
     }
 }
