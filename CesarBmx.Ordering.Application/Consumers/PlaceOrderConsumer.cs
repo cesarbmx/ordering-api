@@ -11,6 +11,7 @@ using CesarBmx.Ordering.Domain.Models;
 using CesarBmx.Shared.Messaging.Notification.Commands;
 using CesarBmx.Shared.Messaging.Notification.Types;
 using CesarBmx.Ordering.Domain.Builders;
+using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Application.Consumers
 {
@@ -52,8 +53,14 @@ namespace CesarBmx.Ordering.Application.Consumers
 
                 // TODO: Place order on Binance
 
+                // Check if it already exists
+                var order = await _mainDbContext.Orders.SingleOrDefaultAsync(x => x.OrderId == placeOrder.OrderId);
+
+                // Return if it exists
+                if (order != null) return;
+
                 // Create order
-                var order = _mapper.Map<Order>(placeOrder);
+                order = _mapper.Map<Order>(placeOrder);
 
                 // Add order
                 await _mainDbContext.Orders.AddAsync(order);
