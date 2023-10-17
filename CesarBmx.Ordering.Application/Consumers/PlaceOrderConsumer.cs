@@ -60,7 +60,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 if (order != null) return;
 
                 // Create order
-                order = _mapper.Map<Order>(placeOrder);
+                order = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);
 
                 // Add order
                 await _mainDbContext.Orders.AddAsync(order);

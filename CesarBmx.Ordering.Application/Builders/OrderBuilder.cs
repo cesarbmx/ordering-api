@@ -20,6 +20,31 @@ public static class OrderBuilder
             );
 
         return order;
+    }    
+    public static Order BuildOrder(this CesarBmx.Shared.Messaging.Ordering.Commands.PlaceOrder placeOrder, DateTime createdAt)
+    {
+        var order = new Order(
+            Guid.NewGuid(),
+            placeOrder.UserId,
+            placeOrder.CurrencyId,
+            placeOrder.Price,
+            placeOrder.Quantity,
+            BuildOrderType(placeOrder.OrderType),
+            createdAt
+            );
+
+        return order;
+    }
+    public static OrderType BuildOrderType(this CesarBmx.Shared.Messaging.Ordering.Types.OrderType orderType)
+    {
+        switch(orderType)
+        {
+            case CesarBmx.Shared.Messaging.Ordering.Types.OrderType.BUY:
+                return OrderType.BUY;
+            case CesarBmx.Shared.Messaging.Ordering.Types.OrderType.SELL:
+                return OrderType.SELL;
+        }
+        throw new NotImplementedException(nameof(orderType));
     }
     public static SendMessage BuildSendMessage(this Order order)
     {
