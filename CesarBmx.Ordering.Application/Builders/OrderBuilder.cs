@@ -24,7 +24,7 @@ public static class OrderBuilder
     public static Order BuildOrder(this CesarBmx.Shared.Messaging.Ordering.Commands.PlaceOrder placeOrder, DateTime createdAt)
     {
         var order = new Order(
-            Guid.NewGuid(),
+            placeOrder.OrderId,
             placeOrder.UserId,
             placeOrder.CurrencyId,
             placeOrder.Price,

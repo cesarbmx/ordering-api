@@ -72,14 +72,19 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var sendNotification = order.BuildSendMessage();
 
                 // Send message
-                await _bus.Send(sendNotification);
-
-                // Response
-                await context.RespondAsync(orderPlaced);
-
-                // Publish
+                await _bus.Send(sendNotification);             
+               
+                // Either response or publish
                 if (context.IsResponseAccepted<OrderPlaced>())
+                {
+                    // Response
+                    await context.RespondAsync(orderPlaced);
+                }
+                else
+                {
+                    // Publish
                     await context.Publish(orderPlaced);
+                }                 
 
                 // Save
                 await _mainDbContext.SaveChangesAsync();
