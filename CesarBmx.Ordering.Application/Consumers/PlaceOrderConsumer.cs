@@ -74,7 +74,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Send message
                 await _bus.Send(sendNotification);             
                
-                // Either response or publish
+                // Either respond or publish
                 if (context.IsResponseAccepted<OrderPlaced>())
                 {
                     // Response
