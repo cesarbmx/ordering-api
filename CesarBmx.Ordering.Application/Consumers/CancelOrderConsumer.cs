@@ -35,7 +35,8 @@ namespace CesarBmx.Ordering.Application.Consumers
         public async Task Consume(ConsumeContext<CancelOrder> context)
         {
             try
-            {
+            {               
+
                 // Start watch
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -58,6 +59,18 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Publish
                 if (context.IsResponseAccepted<OrderCancelled>()) 
                     await context.Publish(orderCancelled);
+
+                // Either respond or publish
+                if (context.IsResponseAccepted<OrderCancelled>())
+                {
+                    // Response
+                    await context.RespondAsync(orderCancelled);
+                }
+                else
+                {
+                    // Publish
+                    await context.Publish(orderCancelled);
+                }
 
                 // Save
                 await _mainDbContext.SaveChangesAsync();
