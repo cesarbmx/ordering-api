@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CesarBmx.Ordering.Persistence.Contexts;
 using CesarBmx.Shared.Messaging.Ordering.Commands;
-using CesarBmx.Ordering.Domain.Models;
-using CesarBmx.Shared.Messaging.Notification.Commands;
-using CesarBmx.Shared.Messaging.Notification.Types;
-using CesarBmx.Ordering.Domain.Builders;
 using Microsoft.EntityFrameworkCore;
 
 namespace CesarBmx.Ordering.Application.Consumers
@@ -21,7 +17,6 @@ namespace CesarBmx.Ordering.Application.Consumers
         private readonly IMapper _mapper;
         private readonly ILogger<PlaceOrderConsumer> _logger;
         private readonly ActivitySource _activitySource;
-        private readonly IBus _bus;
 
         public PlaceOrderConsumer(
             MainDbContext mainDbContext,
@@ -34,7 +29,6 @@ namespace CesarBmx.Ordering.Application.Consumers
             _mapper = mapper;
             _logger = logger;
             _activitySource = activitySource;
-            _bus = bus;
         }
 
         public async Task Consume(ConsumeContext<PlaceOrder> context)
@@ -46,7 +40,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(OrderPlaced));
+                using var span = _activitySource.StartActivity(nameof(PlaceOrder));
 
                 // Command
                 var placeOrder = context.Message;
@@ -65,15 +59,15 @@ namespace CesarBmx.Ordering.Application.Consumers
                 // Add order
                 await _mainDbContext.Orders.AddAsync(order);
 
-                 // Event
-                 var orderPlaced = _mapper.Map<OrderPlaced>(order);
-
                 // Command
                 var sendNotification = order.BuildSendMessage();
 
                 // Send message
-                await _bus.Send(sendNotification);             
-               
+                await context.Send(sendNotification);
+
+                // Event
+                var orderPlaced = _mapper.Map<OrderPlaced>(order);
+
                 // Either respond or publish
                 if (context.IsResponseAccepted<OrderPlaced>())
                 {
@@ -93,7 +87,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Stop();
 
                 // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);               
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", "OrderPlaced", Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);               
             }
             catch (Exception ex)
             {

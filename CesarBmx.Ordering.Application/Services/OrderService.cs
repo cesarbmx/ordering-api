@@ -148,41 +148,5 @@ namespace CesarBmx.Ordering.Application.Services
             // Return
             return response;
         }
-
-        public async Task<Order> PlaceOrder(Order order)
-        {
-            // Start watch
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            // Start span
-            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
-
-            // TODO: Place it on Binance
-
-            // Mark it as placed
-            order.MarkAsPlaced();
-
-            // Update order
-            _mainDbContext.Orders.Update(order);
-
-            // Save
-            await _mainDbContext.SaveChangesAsync();
-
-            // Event
-            var ordersPlaced = _mapper.Map<List<OrderPlaced>>(order);
-
-            // Publish event
-            await _bus.Publish(ordersPlaced);
-
-            // Stop watch
-            stopwatch.Stop();
-
-            // Log
-            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
-
-            // Return
-            return order;
-        }
     }
 }
