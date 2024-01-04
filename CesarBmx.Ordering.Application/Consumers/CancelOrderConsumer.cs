@@ -42,7 +42,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(CancelOrder));
+                using var span = _activitySource.StartActivity(nameof(CancelOrderConsumer));
 
                 // Get order
                 var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x=>x.OrderId == context.Message.OrderId);
@@ -79,7 +79,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Stop();
 
                 // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderCancelled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(CancelOrderConsumer), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
               
             }
             catch (Exception ex)

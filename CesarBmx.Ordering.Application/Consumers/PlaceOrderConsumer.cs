@@ -40,7 +40,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Start();
 
                 // Start span
-                using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+                using var span = _activitySource.StartActivity(nameof(PlaceOrderConsumer));
 
                 // Command
                 var placeOrder = context.Message;
@@ -87,7 +87,7 @@ namespace CesarBmx.Ordering.Application.Consumers
                 stopwatch.Stop();
 
                 // Log
-                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", "OrderPlaced", Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);               
+                _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(PlaceOrderConsumer), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);               
             }
             catch (Exception ex)
             {

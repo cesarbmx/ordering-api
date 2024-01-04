@@ -10,10 +10,8 @@ using CesarBmx.Ordering.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MassTransit;
-using CesarBmx.Ordering.Domain.Builders;
 using CesarBmx.Shared.Messaging.Ordering.Events;
 using CesarBmx.Ordering.Application.Requests;
-using CesarBmx.Ordering.Domain.Models;
 using MassTransit.Transports;
 
 namespace CesarBmx.Ordering.Application.Services
@@ -104,7 +102,7 @@ namespace CesarBmx.Ordering.Application.Services
             stopwatch.Stop();
 
             // Log
-            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderPlaced), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(PlaceOrder), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
             // Return
             return response;
@@ -116,7 +114,7 @@ namespace CesarBmx.Ordering.Application.Services
             stopwatch.Start();
 
             // Start span
-            using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+            using var span = _activitySource.StartActivity(nameof(FillOrder));
 
             // Get order
             var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == fillOrder.OrderId);
@@ -143,7 +141,7 @@ namespace CesarBmx.Ordering.Application.Services
             stopwatch.Stop();
 
             // Log
-            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(OrderFilled), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
+            _logger.LogInformation("{@Event}, {@Id}, {@ExecutionTime}", nameof(FillOrder), Guid.NewGuid(), stopwatch.Elapsed.TotalSeconds);
 
             // Return
             return response;
