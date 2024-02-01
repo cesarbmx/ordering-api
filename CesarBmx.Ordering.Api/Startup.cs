@@ -52,9 +52,6 @@ namespace CesarBmx.Ordering.Api
             // Mvc
             services.ConfigureMvc(Configuration);
 
-            // Cors
-            services.ConfigureCors(Configuration);
-
             // Health
             services.ConfigureHealth(Configuration);
 
