@@ -74,6 +74,7 @@ namespace CesarBmx.Ordering.Application.Services
 
             // Start span
             using var span = _activitySource.StartActivity(nameof(PlaceOrder));
+            span.AddTag("UserId", placeOrder.UserId);
 
             // New order
             var order = OrderBuilder.BuildOrder(placeOrder, DateTime.UtcNow);

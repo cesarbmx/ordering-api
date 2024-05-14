@@ -35,17 +35,20 @@ namespace CesarBmx.Ordering.Application.Consumers
         public async Task Consume(ConsumeContext<CancelOrder> context)
         {
             try
-            {               
-
+            {
                 // Start watch
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
+                // Command
+                var cancelOrder = context.Message;
+
                 // Start span
                 using var span = _activitySource.StartActivity(nameof(CancelOrderConsumer));
+                span.AddTag("UserId", cancelOrder.UserId);
 
                 // Get order
-                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x=>x.OrderId == context.Message.OrderId);
+                var order = await _mainDbContext.Orders.FirstOrDefaultAsync(x=>x.OrderId == cancelOrder.OrderId);
 
                 // Mark as cancelled
                 order.MarkAsCancelled();

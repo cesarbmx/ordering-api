@@ -39,11 +39,12 @@ namespace CesarBmx.Ordering.Application.Consumers
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                // Start span
-                using var span = _activitySource.StartActivity(nameof(PlaceOrderConsumer));
-
                 // Command
                 var placeOrder = context.Message;
+
+                // Start span
+                using var span = _activitySource.StartActivity(nameof(PlaceOrderConsumer));
+                span.AddTag("UserId", placeOrder.UserId);
 
                 // TODO: Place order on Binance
 
