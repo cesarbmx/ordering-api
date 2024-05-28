@@ -1,17 +1,14 @@
 ﻿using CesarBmx.Shared.Api.Configuration;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Reflection;
 
 namespace CesarBmx.Ordering.Api.Configuration
 {
     public static class SerilogConfig
     {
-        public static ILoggerFactory ConfigureSerilog(this IApplicationBuilder app, ILoggerFactory logger, IConfiguration configuration)
+        public static ILoggerFactory ConfigureSerilog(this ILoggerFactory logger, IConfiguration configuration)
         {
-            app.ConfigureSharedSerilog(logger, Assembly.GetExecutingAssembly(), configuration);
-            
+            logger.ConfigureSharedSerilog(configuration, Assembly.GetExecutingAssembly());
+
             return logger;
         }
     }

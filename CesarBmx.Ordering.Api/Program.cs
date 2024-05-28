@@ -13,7 +13,7 @@ namespace CesarBmx.Ordering.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureSharedSerilog()
+                //.ConfigureSharedSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
