@@ -15,7 +15,7 @@ namespace CesarBmx.Ordering.Api.Configuration
 
             // Grab settings
             var appSettings = configuration.GetSection<AppSettings>();
-            var environmentSettings = configuration.GetSection<Shared.Application.Settings.EnvironmentSettings>();
+            var environmentSettings = configuration.GetSection<Shared.Settings.EnvironmentSettings>();
 
             if (appSettings.UseMemoryStorage)
             {
@@ -36,13 +36,13 @@ namespace CesarBmx.Ordering.Api.Configuration
         public static IApplicationBuilder ConfigureHangfire(this IApplicationBuilder app, IConfiguration configuration)
         {
             // Grab EnvironmentSettings
-            var environmentSettings = configuration.GetSection<Shared.Application.Settings.EnvironmentSettings>();
+            var environmentSettings = configuration.GetSection<Shared.Settings.EnvironmentSettings>();
 
             // Enable basic auth only for Staging/Production
             app.ConfigureSharedHangfire(environmentSettings.Name == "Staging" || environmentSettings.Name == "Production");
 
             // Grab settings
-            var appSettings = configuration.GetSection<Application.Settings.AppSettings>();
+            var appSettings = configuration.GetSection<AppSettings>();
 
             // Background jobs
             var jobsIntervalInMinutes = appSettings.JobsIntervalInMinutes;
