@@ -9,7 +9,8 @@
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
 		<DockerfileContext>..\..\CryptoWatcherApi</DockerfileContext>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<RuntimeIdentifiers>win-x64;linux-x64;</RuntimeIdentifiers>
 		<DocumentationFile>CesarBmx.Ordering.Api.xml</DocumentationFile>
 	</PropertyGroup>
 
