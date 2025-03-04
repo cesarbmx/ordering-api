@@ -1,6 +1,7 @@
 ﻿using CesarBmx.Shared.Api.Configuration;
 using CesarBmx.Ordering.Persistence.Contexts;
 using CesarBmx.Ordering.Application.Consumers;
+using CesarBmx.Shared.Messaging.Notification.Commands;
 
 namespace CesarBmx.Ordering.Api.Configuration
 {
@@ -11,6 +12,7 @@ namespace CesarBmx.Ordering.Api.Configuration
             // Shared
             //services.ConfigureSharedMasstransit<MainDbContext>(configuration, typeof(PlaceOrderConsumer), typeof(OrderSaga));
             services.ConfigureSharedMasstransit<MainDbContext>(configuration, typeof(PlaceOrderConsumer));
+            services.UseCommand<SendMessage>();
 
             // Return
             return services;
