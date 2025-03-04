@@ -66,6 +66,9 @@ services.ConfigureOpenTelemetry(configuration);
 // Masstransit
 services.ConfigureMasstransit(configuration);
 
+// Elastic
+services.ConfigureElastic();
+
 #endregion
 
 #region App
