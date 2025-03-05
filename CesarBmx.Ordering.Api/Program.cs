@@ -67,7 +67,7 @@ services.ConfigureOpenTelemetry(configuration);
 services.ConfigureMasstransit(configuration);
 
 // Elastic
-services.ConfigureElastic();
+services.ConfigureElastic(configuration);
 
 #endregion
 
